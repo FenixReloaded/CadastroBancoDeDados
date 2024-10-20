@@ -37,16 +37,24 @@ public class FramePrincipal extends JFrame {
         // Criação e estilizacao dos Botões
         cadastrarAluno = new JButton("Cadastro de Aluno");
         cadastrarAluno.setFont(labelFont);
-        cadastrarAluno.setPreferredSize(new Dimension(180, 60));
+        cadastrarAluno.setPreferredSize(new Dimension(160, 50));
+        cadastrarAluno.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        cadastrarAluno.setFocusPainted(false);                  // Remove a borda de foco
+        //cadastrarAluno.setBorderPainted(false);                 // Remove a borda padrão
 
 
         sairButton = new JButton("Sair");
         sairButton.setFont(labelFont);
-        sairButton.setPreferredSize(new Dimension(180, 60));
+        sairButton.setPreferredSize(new Dimension(160, 50));
+        sairButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        sairButton.setFocusPainted(false);                  // Remove a borda de foco
 
         creditosButton = new JButton("Créditos");
         creditosButton.setFont(labelFont);
-        creditosButton.setPreferredSize(new Dimension(180, 60));
+        creditosButton.setPreferredSize(new Dimension(160, 50));
+        creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        creditosButton.setFocusPainted(false);                  // Remove a borda de foco
+
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
@@ -61,11 +69,11 @@ public class FramePrincipal extends JFrame {
         gbc.gridy = 0;
         gradientPanel.add(cadastrarAluno, gbc); // Adiciona o botão de cadastro
 
-        gbc.gridy = 1; // Próxima linha
-        gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
-
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gradientPanel.add(creditosButton, gbc); // Adiciona o botao de creditos
+
+        gbc.gridy = 2; // Próxima linha
+        gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
 
         // Adiciona o painel de fundo ao frame principal
         add(gradientPanel);
