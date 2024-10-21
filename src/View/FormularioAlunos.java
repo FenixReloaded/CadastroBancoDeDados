@@ -105,7 +105,7 @@ public class FormularioAlunos extends JFrame {
         try (Connection conexao = DataBase.conectar();
              Statement stmt = conexao.createStatement(
                      ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos")) {
+             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos ORDER BY Cursos_ID ASC")) {
 
             cursoComboBox.removeAllItems(); // Limpa o comboBox
 
@@ -155,6 +155,7 @@ public class FormularioAlunos extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String nome = nomeField.getText();
             String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
+
             if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
                 return;
@@ -169,6 +170,7 @@ public class FormularioAlunos extends JFrame {
             }
 
             String ra = gerarRAUnico(); // RA único gerado
+
             int matriculaId = gerarMatricula();
 
             try (Connection conexao = DataBase.conectar()) {
@@ -184,6 +186,7 @@ public class FormularioAlunos extends JFrame {
 
                 // Passar o RA diretamente ao método de matrícula
                 efetuarMatricula(ra, cursoId);
+
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
             }
@@ -255,6 +258,7 @@ public class FormularioAlunos extends JFrame {
         }
 
         confirmarBtn = new JButton("Confirmar Matrícula");
+
         confirmarBtn.addActionListener(e -> {
             try (Connection conexao = DataBase.conectar()) {
                 String sql = "INSERT INTO Disciplinas_Alunos (Disciplinas_ID, Alunos_Ra, Situacao_Disciplina) " +
