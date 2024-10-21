@@ -1,7 +1,7 @@
 package View;
 
 import Controller.DataBase;
-import com.formdev.flatlaf.FlatLightLaf;
+import com.formdev.flatlaf.themes.FlatMacLightLaf;
 
 import javax.swing.*;
 import javax.swing.border.EmptyBorder;
@@ -9,25 +9,44 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.geom.Point2D;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
+import java.util.ArrayList;
+import java.util.Random;
 
 public class FormularioAlunos extends JFrame {
-    private JTextField raField;
     private JTextField nomeField;
-    private JTextField cursoField;
-    private JTextField matriculaField;
+    private JComboBox<String> cursoComboBox;
     private JButton inserirBtn;
     private JPanel panel;
-    private JFrame frame;
+    private String raGerado; // Guarda o RA gerado para o aluno
+    private JButton confirmarBtn;
 
-    public FormularioAlunos(){
 
+    public FormularioAlunos() {
+        try {
+            UIManager.setLookAndFeel(new FlatMacLightLaf());
+            UIManager.put("ComboBox.padding", new Insets(4, 4, 4, 4));
+            UIManager.put("ComboBox.minimumWidth", 25);
+            UIManager.put("ComboBox.minimumHeight", 15);
+            UIManager.put("ComboBox.selectionInsets", new Insets(2, 2, 2, 2));
+            UIManager.put("ComboBox.buttonSeparatorWidth", 1);
+            UIManager.put("ComboBox.editorColumns", 1);
+            UIManager.put("ComboBox.font", new Font("Comic Sans MS", Font.BOLD, 13));
+
+
+            UIManager.put("Button.margin", new Insets(6, 2, 6, 2));
+            UIManager.put("Button.minimumWidth", 10);
+            UIManager.put("Button.minimumHeight", 35);
+            UIManager.put("Button.iconTextGap", 5);
+            UIManager.put("Button.font", new Font("Comic Sans MS", Font.BOLD, 13));
+
+        } catch (Exception e){
+            e.printStackTrace();
+        }
         setTitle("Inserção de Dados - Alunos");
         setSize(400, 400);
         setLocationRelativeTo(null); // Centraliza a janela
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         // Configuração do painel com gradiente
         panel = new GradientPanel("diagonal");
@@ -38,27 +57,13 @@ public class FormularioAlunos extends JFrame {
         constraints.insets = new Insets(10, 10, 10, 10);
         constraints.fill = GridBagConstraints.HORIZONTAL;
 
-
-        // Fonte personalizada para as labels
         Font labelFont = new Font("Comic Sans MS", Font.BOLD, 13);
 
-        // Linha 1: RA
+        // Linha 1: Nome
         constraints.gridx = 0;
         constraints.gridy = 0;
-        JLabel raLabel = new JLabel("RA:");
-        raLabel.setFont(labelFont);  // Aplica fonte maior e negrito
-        panel.add(raLabel, constraints);
-
-        constraints.gridx = 1;
-        raField = new JTextField(15);
-        raField.putClientProperty("JComponent.roundRect", true);
-        panel.add(raField, constraints);
-
-        // Linha 2: Nome
-        constraints.gridx = 0;
-        constraints.gridy = 1;
         JLabel nomeLabel = new JLabel("Nome:");
-        nomeLabel.setFont(labelFont);  // Fonte personalizada
+        nomeLabel.setFont(labelFont);
         panel.add(nomeLabel, constraints);
 
         constraints.gridx = 1;
@@ -66,86 +71,190 @@ public class FormularioAlunos extends JFrame {
         nomeField.putClientProperty("JComponent.roundRect", true);
         panel.add(nomeField, constraints);
 
-        // Linha 3: Curso
+        // Linha 2: Curso (ComboBox)
         constraints.gridx = 0;
-        constraints.gridy = 2;
+        constraints.gridy = 1;
         JLabel cursoLabel = new JLabel("Curso:");
-        cursoLabel.setFont(labelFont);  // Fonte personalizada
+        cursoLabel.setFont(labelFont);
         panel.add(cursoLabel, constraints);
 
         constraints.gridx = 1;
-        cursoField = new JTextField(15);
-        cursoField.putClientProperty("JComponent.roundRect", true);
-        panel.add(cursoField, constraints);
+        cursoComboBox = new JComboBox<>();
+        carregarCursos(); // Chamar para carregar os cursos ao iniciar
+        panel.add(cursoComboBox, constraints); // Adicionar o comboBox ao layout
+        // colocar propriedade do flatlaf
 
-        // Linha 4: Matrícula
+
+        // Linha 3: Botão Inserir
         constraints.gridx = 0;
-        constraints.gridy = 3;
-        JLabel matriculaLabel = new JLabel("Matrícula:");
-        matriculaLabel.setFont(labelFont);  // Fonte personalizada
-        panel.add(matriculaLabel, constraints);
-
-        constraints.gridx = 1;
-        matriculaField = new JTextField(15);
-        matriculaField.putClientProperty("JComponent.roundRect", true);
-        panel.add(matriculaField, constraints);
-
-        // Linha 5: Botão Inserir
-        constraints.gridx = 0;
-        constraints.gridy = 4;
-        constraints.gridwidth = 2; // O botão ocupa duas colunas
+        constraints.gridy = 2;
+        constraints.gridwidth = 2;
         inserirBtn = new JButton("Inserir");
         inserirBtn.setFont(labelFont);
         inserirBtn.addActionListener(new InserirDadosListener());
+        inserirBtn.putClientProperty("Button.minimumHeight", 38);
         panel.add(inserirBtn, constraints);
 
-        // Adicionando o painel ao frame
         add(panel);
         setVisible(true);
     }
 
+    // Método para obter cursos do banco
+    private void carregarCursos() {
+        try (Connection conexao = DataBase.conectar();
+             Statement stmt = conexao.createStatement(
+                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos")) {
+
+            cursoComboBox.removeAllItems(); // Limpa o comboBox
+
+            while (rs.next()) {
+                int cursoId = rs.getInt("Cursos_ID");
+                String cursoNome = rs.getString("Nomes");
+                cursoComboBox.addItem(cursoId + " - " + cursoNome);
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar cursos: " + e.getMessage());
+        }
+    }
 
     private class InserirDadosListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String ra = raField.getText();
             String nome = nomeField.getText();
-            String curso = cursoField.getText();
-            int matriculaId;
-
-            // Validação do campo ID Matrícula
-            try {
-                matriculaId = Integer.parseInt(matriculaField.getText());
-            } catch (NumberFormatException ex) {
-                JOptionPane.showMessageDialog(null, "ID Matrícula deve ser um número inteiro.");
-                return; // Sai da ação caso ocorra erro
+            String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
+            if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
+                return;
             }
 
+            // Extrair o ID do curso a partir do item selecionado
+            int cursoId = Integer.parseInt(cursoSelecionado.split(" - ")[0]);
+
+            if (nome.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "Nome não pode estar vazio.");
+                return;
+            }
+
+            String ra = gerarRAUnico();
+            int matriculaId = gerarMatricula();
+
             try (Connection conexao = DataBase.conectar()) {
-                String sql = "INSERT INTO alunos (ra, nome, curso, matriculas_id) VALUES (?, ?, ?, ?)";
+                String sql = "INSERT INTO alunos (Ra, Nome, Cursos_ID, Matriculas_ID) VALUES (?, ?, ?, ?)";
                 PreparedStatement stmt = conexao.prepareStatement(sql);
                 stmt.setString(1, ra);
                 stmt.setString(2, nome);
-                stmt.setString(3, curso);
+                stmt.setInt(3, cursoId);
                 stmt.setInt(4, matriculaId);
 
                 stmt.executeUpdate();
-                JOptionPane.showMessageDialog(null, "Dados inseridos com sucesso!");
+                JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
+
+                // Chamar o método de efetuar matrícula com o ID do curso
+                efetuarMatricula(matriculaId, cursoId);
             } catch (SQLException ex) {
-                // Tratamento de diferentes tipos de erros SQL
-                if (ex.getErrorCode() == 1062) {
-                    // Código de erro para chave duplicada (MySQL)
-                    JOptionPane.showMessageDialog(null, "Erro: RA já cadastrado.");
-                } else if (ex.getErrorCode() == 1048) {
-                    // Código de erro para valor nulo em campo não nulo
-                    JOptionPane.showMessageDialog(null, "Erro: Campos não podem ser nulos.");
-                } else {
-                    JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
-                }
-            } catch (Exception ex) {
-                // Captura de outras exceções que não são SQL
-                JOptionPane.showMessageDialog(null, "Erro inesperado: " + ex.getMessage());
+                JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
             }
+        }
+    }
+
+    // Método para gerar RA único
+    private String gerarRAUnico() {
+        Random random = new Random();
+        String ra;
+
+        try (Connection conexao = DataBase.conectar()) {
+            ResultSet rs;
+            do {
+                ra = "RA" + String.format("%08d", random.nextInt(100000000));
+                String sql = "SELECT Ra FROM alunos WHERE Ra = ?";
+                PreparedStatement stmt = conexao.prepareStatement(sql);
+                stmt.setString(1, ra);
+                rs = stmt.executeQuery();
+            } while (rs.next());
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao gerar RA: " + e.getMessage());
+            return null;
+        }
+        return ra;
+    }
+
+    // Método para gerar número de matrícula incremental
+    private int gerarMatricula() {
+        int novoRegistroId = 1; // Valor inicial caso a tabela esteja vazia
+
+        try (Connection conexao = DataBase.conectar()) {
+            // Recuperar o maior Registro_ID
+            String sql = "SELECT MAX(Registro_ID) FROM matriculas";
+            Statement stmt = conexao.createStatement();
+            ResultSet rs = stmt.executeQuery(sql);
+
+            if (rs.next()) {
+                novoRegistroId = rs.getInt(1) + 1;
+            }
+
+            // Insere a nova matrícula com campo 'Ativa'
+            String insertSql = "INSERT INTO matriculas (Registro_ID, Ativa) VALUES (?, ?)";
+            PreparedStatement insertStmt = conexao.prepareStatement(insertSql);
+            insertStmt.setInt(1, novoRegistroId);
+            insertStmt.setBytes(2, new byte[]{1}); // Ativa como 1 (ativo)
+            insertStmt.executeUpdate();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao gerar matrícula: " + e.getMessage());
+        }
+        return novoRegistroId;
+    }
+
+    private void efetuarMatricula(int matriculaId, int cursoId) {
+        JFrame frame = new JFrame("Efetuar Matrícula");
+        frame.setSize(300, 400);
+        frame.setLocationRelativeTo(null);
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // Obter disciplinas específicas para o curso selecionado
+        JComboBox<String> disciplinasBox = new JComboBox<>(obterDisciplinasDoCurso(cursoId));
+        panel.add(new JLabel("Selecione a disciplina:", 0));
+        panel.add(disciplinasBox);
+
+        confirmarBtn = new JButton("Confirmar Matrícula");
+        confirmarBtn.putClientProperty("Button.margin", new Insets(1,1,1,1));
+        confirmarBtn.putClientProperty("Button.minimumWidth", 10);
+        confirmarBtn.putClientProperty("Button.minimumHeight", 15);
+
+        confirmarBtn.addActionListener(e -> {
+            String disciplina = (String) disciplinasBox.getSelectedItem();
+            JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!\nDisciplina: " + disciplina);
+            frame.dispose();
+        });
+
+
+        panel.add(confirmarBtn);
+        frame.add(panel);
+        frame.setVisible(true);
+    }
+
+    // Método para obter disciplinas do banco
+    private String[] obterDisciplinasDoCurso(int cursoId) {
+        try (Connection conexao = DataBase.conectar();
+             Statement stmt = conexao.createStatement(
+                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery("SELECT nome FROM disciplinas")) {
+
+            // Navega até o final para contar o número de disciplinas
+            rs.last();
+            String[] disciplinas = new String[rs.getRow()]; // Define o tamanho do array
+            rs.beforeFirst(); // Retorna para o início do ResultSet
+
+            int i = 0;
+            while (rs.next()) {
+                disciplinas[i++] = rs.getString("nome");
+            }
+            return disciplinas;
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar disciplinas: " + e.getMessage());
+            return new String[]{};
         }
     }
 
@@ -163,53 +272,12 @@ public class FormularioAlunos extends JFrame {
             int width = getWidth();
             int height = getHeight();
 
-            switch (tipoGradiente.toLowerCase()) {
-                case "radial":
-                    Point2D center = new Point2D.Float(width / 2f, height / 2f);
-                    float radius = Math.min(width, height);
-                    RadialGradientPaint radialGradient = new RadialGradientPaint(
-                            center, radius,
-                            new float[]{0f, 1f},
-                            new Color[]{new Color(50, 58, 198), new Color(236, 236, 236)}
-                    );
-                    g2d.setPaint(radialGradient);
-                    break;
-
-                case "horizontal":
-                    GradientPaint horizontalGradient = new GradientPaint(
-                            0, height / 2f, new Color(109, 110, 125),
-                            width, height / 2f, new Color(20, 122, 246, 97)
-                    );
-                    g2d.setPaint(horizontalGradient);
-                    break;
-
-                case "diagonal":
-                    GradientPaint diagonalGradient = new GradientPaint(
-                            0, 0, new Color(50, 58, 198),
-                            width, height, new Color(236, 236, 236, 97)
-                    );
-                    g2d.setPaint(diagonalGradient);
-                    break;
-
-                default:
-                    // Se nenhum tipo for especificado, aplica um gradiente simples
-                    GradientPaint defaultGradient = new GradientPaint(
-                            0, 0, Color.LIGHT_GRAY,
-                            0, height, Color.DARK_GRAY
-                    );
-                    g2d.setPaint(defaultGradient);
-                    break;
-            }
+            GradientPaint diagonalGradient = new GradientPaint(
+                    0, 0, new Color(50, 58, 198),
+                    width, height, new Color(236, 236, 236)
+            );
+            g2d.setPaint(diagonalGradient);
             g2d.fillRect(0, 0, width, height);
         }
     }
-
-    //    public void gravarDadosDB(String ra, String nome, int idade)  throws Exception {
-//        try{
-//            String SQL = "INSERT INTO alunos (ra, nome, idade) " + "VALUES ('"+ ra + "','"+ nome + "'," + idade + ")";
-//            st.execute(SQL);
-//        }catch(Exception e) {
-//            throw new Exception(e.getMessage());
-//        }
-//    }
 }

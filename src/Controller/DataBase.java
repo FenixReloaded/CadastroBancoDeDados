@@ -10,7 +10,7 @@ public class DataBase {
     public static Connection conectar() {
         Connection connection = null; // Inicializar a variável de conexão como null
         try {
-            String url = "jdbc:mysql://localhost:3306/cadastroDeAlunos"; // Certifique-se de que o nome do banco de dados está correto
+            String url = "jdbc:mysql://localhost:3306/cadastro_alunos"; // Certifique-se de que o nome do banco de dados está correto
             String usuario = "root";
             String senha = "root";
 

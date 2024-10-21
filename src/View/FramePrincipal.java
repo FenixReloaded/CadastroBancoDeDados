@@ -17,6 +17,12 @@ public class FramePrincipal extends JFrame {
     public FramePrincipal(){
         try {
             UIManager.setLookAndFeel(new FlatMacLightLaf());
+            UIManager.put("ComboBox.padding", new Insets(2, 2, 2, 2));
+            UIManager.put("ComboBox.minimumWidth", 50);
+            UIManager.put("ComboBox.selectionInsets", new Insets(2, 2, 2, 2));
+            UIManager.put("ComboBox.buttonSeparatorWidth", 0);
+            UIManager.put("ComboBox.editorColumns", 10);
+
         } catch (Exception e){
             e.printStackTrace();
         }
