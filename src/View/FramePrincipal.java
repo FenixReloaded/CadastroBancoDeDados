@@ -12,6 +12,7 @@ public class FramePrincipal extends JFrame {
     private JButton cadastrarAluno;
     private JButton sairButton;
     private JButton creditosButton;
+    private
 
 
     public FramePrincipal(){
@@ -61,6 +62,7 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
+        alterarButton = new JButton("Alterar Cadastro");
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
@@ -87,6 +89,7 @@ public class FramePrincipal extends JFrame {
         // Exibe a janela
         setVisible(true);
     }
+
 
     // Método para mostrar a janela de créditos
     private void mostrarCreditos() {
