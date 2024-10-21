@@ -7,7 +7,7 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="mysql-connector-java-8.0.281" level="project" />
-    <orderEntry type="library" name="flatlaf-3.5.1" level="project" />
+    <orderEntry type="library" name="flatlaf-3.5.11" level="project" />
+    <orderEntry type="library" name="mysql-connector-java-8.0.28" level="project" />
   </component>
 </module>

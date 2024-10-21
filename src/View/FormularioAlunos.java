@@ -15,11 +15,16 @@ import java.util.Random;
 
 public class FormularioAlunos extends JFrame {
     private JTextField nomeField;
-    private JComboBox<String> cursoComboBox;
+    private static JComboBox<String> cursoComboBox;
     private JButton inserirBtn;
     private JPanel panel;
     private String raGerado; // Guarda o RA gerado para o aluno
     private JButton confirmarBtn;
+    private JButton alterarButton;
+    private String ra;
+    private String novoNome;
+    private int novoCursoId;
+
 
 
     public FormularioAlunos() {
@@ -80,28 +85,191 @@ public class FormularioAlunos extends JFrame {
 
         constraints.gridx = 1;
         cursoComboBox = new JComboBox<>();
-        carregarCursos(); // Chamar para carregar os cursos ao iniciar
-        panel.add(cursoComboBox, constraints); // Adicionar o comboBox ao layout
-        // colocar propriedade do flatlaf
-
+        carregarCursos(); // Carregar cursos na inicialização
+        panel.add(cursoComboBox, constraints);
 
         // Linha 3: Botão Inserir
         constraints.gridx = 0;
         constraints.gridy = 2;
         constraints.gridwidth = 2;
         inserirBtn = new JButton("Inserir");
-        inserirBtn.setFont(labelFont);
         inserirBtn.addActionListener(new InserirDadosListener());
-        inserirBtn.putClientProperty("Button.minimumHeight", 38);
         panel.add(inserirBtn, constraints);
+
+        // Linha 4: Botão Alterar Cadastro
+        constraints.gridy = 3;
+        alterarButton = new JButton("Alterar Cadastro");
+        alterarButton.addActionListener(e -> abrirFormularioAlteracao());
+        panel.add(alterarButton, constraints);
 
         add(panel);
         setVisible(true);
     }
 
+    private void abrirFormularioAlteracao() {
+        JFrame frame = new JFrame("Atualizar Cadastro");
+        frame.setSize(400, 300);
+        frame.setLocationRelativeTo(null);
+        frame.add(criarFormularioAlteracao());
+        frame.setVisible(true);
+    }
+
+    private JPanel criarFormularioAlteracao() {
+        JPanel painel = new JPanel(new GridLayout(4, 2, 10, 10));
+        painel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        // Campos de texto
+        JTextField raField = new JTextField();
+        JTextField nomeField = new JTextField();
+
+        // Criar ComboBox para cursos
+        JComboBox<String> cursoField = new JComboBox<>();
+        carregarCursosParaComboBox(cursoField); // Carregar os cursos no ComboBox de alteração
+
+        // Botão de atualizar
+        JButton atualizarButton = new JButton("Atualizar");
+        atualizarButton.addActionListener(e -> {
+            String ra = raField.getText();
+            String novoNome = nomeField.getText();
+            try {
+                // Extrair o ID do curso do item selecionado no ComboBox
+                int novoCursoId = Integer.parseInt(cursoField.getSelectedItem().toString().split(" - ")[0]);
+                atualizarCadastro(ra, novoNome, novoCursoId);
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(null, "ID do curso inválido.");
+            }
+        });
+
+        // Adicionar componentes ao painel
+        painel.add(new JLabel("RA:"));
+        painel.add(raField);
+        painel.add(new JLabel("Novo Nome:"));
+        painel.add(nomeField);
+        painel.add(new JLabel("Novo Curso:"));
+        painel.add(cursoField);
+        painel.add(new JLabel());
+        painel.add(atualizarButton);
+
+        return painel;
+    }
+
+    // Carrega os cursos em qualquer ComboBox
+    public void carregarCursosParaComboBox(JComboBox<String> comboBox) {
+        try (Connection conexao = DataBase.conectar();
+             Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos ORDER BY Cursos_ID ASC")) {
+
+            comboBox.removeAllItems(); // Limpa o comboBox antes de carregar os cursos
+
+            while (rs.next()) {
+                int cursoId = rs.getInt("Cursos_ID");
+                String cursoNome = rs.getString("Nomes");
+                comboBox.addItem(cursoId + " - " + cursoNome); // Exibe "ID - Nome do Curso"
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar cursos: " + e.getMessage());
+        }
+    }
+
+
+
+    private void atualizarCadastro(String ra, String novoNome, int novoCursoId) {
+        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
+
+        try (Connection conexao = DataBase.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setString(1, novoNome);
+            stmt.setInt(2, novoCursoId);
+            stmt.setString(3, ra);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0) {
+                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
+            } else {
+                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
+        }
+    }
+
+
+    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
+        JFrame frame = new JFrame("Atualizar Cadastro");
+        frame.setSize(400, 400);
+        frame.setLocationRelativeTo(null);
+        frame.add(formularioAlterarCadastro());
+        frame.setVisible(true);
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
+
+        try (Connection conexao = DataBase.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setString(1, novoNome);
+            stmt.setInt(2, novoCursoId);
+            stmt.setString(3, ra);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0) {
+                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
+            } else {
+                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
+        }
+    }
+
+    public JPanel formularioAlterarCadastro(){
+        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
+
+        JLabel raLabel = new JLabel("RA:");
+        JTextField raField = new JTextField();
+
+        JLabel nomeLabel = new JLabel("Novo Nome");
+        JTextField nomeField = new JTextField();
+
+        JLabel cursoLabel = new JLabel("Novo Curso ID:");
+        JTextField cursoField = new JTextField();
+
+        JButton atualizarButton = new JButton("Atualizar");
+
+        atualizarButton.addActionListener(e -> {
+            String ra = raField.getText();
+            String novoNome = nomeField.getText();
+            int novoCursoId;
+
+            try {
+                novoCursoId = Integer.parseInt(cursoField.getText());
+                alterarCadastro(ra, novoNome, novoCursoId);
+            } catch (NumberFormatException ex){
+                JOptionPane.showMessageDialog(null, "ID do curso inválido");
+            }
+        });
+
+        painel.add(raLabel);
+        painel.add(raField);
+        painel.add(nomeField);
+        painel.add(nomeLabel);
+        painel.add(cursoLabel);
+        painel.add(cursoField);
+        painel.add(new JLabel());
+        painel.add(atualizarButton);
+
+        return painel;
+    }
+
 
     // Método para obter cursos do banco
-    private void carregarCursos() {
+    public void carregarCursos() {
         try (Connection conexao = DataBase.conectar();
              Statement stmt = conexao.createStatement(
                      ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
@@ -114,13 +282,14 @@ public class FormularioAlunos extends JFrame {
                 String cursoNome = rs.getString("Nomes");
                 cursoComboBox.addItem(cursoId + " - " + cursoNome);
             }
+
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, "Erro ao carregar cursos: " + e.getMessage());
         }
     }
 
     // Método para obter disciplinas do banco
-    // Método para obter disciplinas do curso selecionado
+
     private String[] obterDisciplinasDoCurso(int cursoId) {
         String query = "SELECT Nome FROM disciplinas WHERE Cursos_ID = ?";
 
