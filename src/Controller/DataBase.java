@@ -12,7 +12,7 @@ public class DataBase {
         try {
             String url = "jdbc:mysql://localhost:3306/cadastro_alunos"; // Certifique-se de que o nome do banco de dados está correto
             String usuario = "root";
-            String senha = "root";
+            String senha = "GFCqy19F5JPTmf!";
 
             Class.forName("com.mysql.cj.jdbc.Driver");
 

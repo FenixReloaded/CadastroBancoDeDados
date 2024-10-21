@@ -17,11 +17,11 @@ public class FramePrincipal extends JFrame {
     private JButton cadastrarAluno;
     private JButton sairButton;
     private JButton creditosButton;
+    private JButton removerButton;
     private JButton alterarButton;
     private String ra;
     private String novoNome;
     private int novoCursoId;
-
 
     public FramePrincipal(){
         try {
@@ -57,7 +57,6 @@ public class FramePrincipal extends JFrame {
         cadastrarAluno.setFocusPainted(false);                  // Remove a borda de foco
         //cadastrarAluno.setBorderPainted(false);                 // Remove a borda padrão
 
-
         sairButton = new JButton("Sair");
         sairButton.setFont(labelFont);
         sairButton.setPreferredSize(new Dimension(160, 50));
@@ -70,6 +69,12 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
+        removerButton = new JButton("Remover Aluno");
+        removerButton.setFont(labelFont);
+        removerButton.setPreferredSize(new Dimension(160, 50));
+        removerButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        removerButton.setFocusPainted(false);                  // Remove a borda de foco
+
         alterarButton = new JButton("Alterar Cadastro");
         alterarButton.setPreferredSize(new Dimension(160, 50));
         alterarButton.setFont(labelFont);
@@ -81,6 +86,7 @@ public class FramePrincipal extends JFrame {
         alterarButton.addActionListener(e -> alterarCadastro(ra, novoNome, novoCursoId));
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
+        removerButton.addActionListener(e -> new TelaRemoverAluno());
 
         // Adicionando os Botões no Painel
         GridBagConstraints gbc = new GridBagConstraints();
@@ -90,8 +96,8 @@ public class FramePrincipal extends JFrame {
         gbc.gridy = 0;
         gradientPanel.add(cadastrarAluno, gbc); // Adiciona o botão de cadastro
 
-        gbc.gridy = 1;
-        gradientPanel.add(alterarButton, gbc);
+        gbc.gridy = 1; // Próxima linha
+        gradientPanel.add(removerButton, gbc); // Adiciona o botão de remover aluno
 
         gbc.gridy = 2;
         gradientPanel.add(creditosButton, gbc); // Adiciona o botao de creditos
