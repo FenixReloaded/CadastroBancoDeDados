@@ -118,6 +118,37 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
+    // Método para obter disciplinas do banco
+    // Método para obter disciplinas do curso selecionado
+    private String[] obterDisciplinasDoCurso(int cursoId) {
+        String query = "SELECT Nome FROM disciplinas WHERE Cursos_ID = ?";
+
+        try (Connection conexao = DataBase.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(query,
+                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY)) {
+
+            stmt.setInt(1, cursoId); // Define o ID do curso no parâmetro
+
+            ResultSet rs = stmt.executeQuery();
+
+            // Conta o número de disciplinas
+            rs.last();
+            String[] disciplinas = new String[rs.getRow()]; // Define o tamanho do array
+            rs.beforeFirst(); // Retorna para o início do ResultSet
+
+            int i = 0;
+            while (rs.next()) {
+                disciplinas[i++] = rs.getString("Nome");
+            }
+            return disciplinas;
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar disciplinas: " + e.getMessage());
+            return new String[]{};
+        }
+    }
+
+
     private class InserirDadosListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -136,7 +167,7 @@ public class FormularioAlunos extends JFrame {
                 return;
             }
 
-            String ra = gerarRAUnico();
+            String ra = gerarRAUnico(); // RA único gerado
             int matriculaId = gerarMatricula();
 
             try (Connection conexao = DataBase.conectar()) {
@@ -150,8 +181,8 @@ public class FormularioAlunos extends JFrame {
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
 
-                // Chamar o método de efetuar matrícula com o ID do curso
-                efetuarMatricula(matriculaId, cursoId);
+                // Passar o RA diretamente ao método de matrícula
+                efetuarMatricula(ra, cursoId);
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
             }
@@ -205,7 +236,99 @@ public class FormularioAlunos extends JFrame {
         return novoRegistroId;
     }
 
-    private void efetuarMatricula(int matriculaId, int cursoId) {
+//    private void efetuarMatricula(int matriculaId, int cursoId) {
+//        JFrame frame = new JFrame("Efetuar Matrícula");
+//        frame.setSize(300, 400);
+//        frame.setLocationRelativeTo(null);
+//
+//        JPanel panel = new JPanel(new GridLayout(0, 1));
+//        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+//
+//        // Obter disciplinas específicas para o curso selecionado
+//        JComboBox<String> disciplinasBox = new JComboBox<>(obterDisciplinasDoCurso(cursoId));
+//        panel.add(new JLabel("Selecione a disciplina:", 0));
+//        panel.add(disciplinasBox);
+//
+//        confirmarBtn = new JButton("Confirmar Matrícula");
+//        confirmarBtn.putClientProperty("Button.margin", new Insets(1,1,1,1));
+//        confirmarBtn.putClientProperty("Button.minimumWidth", 10);
+//        confirmarBtn.putClientProperty("Button.minimumHeight", 15);
+//
+//        confirmarBtn.addActionListener(e -> {
+//            String disciplina = (String) disciplinasBox.getSelectedItem();
+//            JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!\nDisciplina: " + disciplina);
+//            frame.dispose();
+//        });
+//
+//
+//        panel.add(confirmarBtn);
+//        frame.add(panel);
+//        frame.setVisible(true);
+//    }
+
+    //FUNCIONA MELHOR
+//    private void efetuarMatricula(int matriculaId, int cursoId) {
+//        JFrame frame = new JFrame("Efetuar Matrícula");
+//        frame.setSize(400, 400);
+//        frame.setLocationRelativeTo(null);
+//
+//        JPanel panel = new JPanel(new GridLayout(0, 1));
+//        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+//
+//        // Obter disciplinas do curso selecionado
+//        String[] disciplinas = obterDisciplinasDoCurso(cursoId);
+//        ArrayList<JCheckBox> checkboxes = new ArrayList<>();
+//
+//        // Adicionar as disciplinas como checkboxes
+//        panel.add(new JLabel("Selecione as disciplinas:", SwingConstants.CENTER));
+//        for (String disciplina : disciplinas) {
+//            JCheckBox checkBox = new JCheckBox(disciplina);
+//            checkboxes.add(checkBox);
+//            panel.add(checkBox);
+//        }
+//
+//        // Botão para confirmar a matrícula
+//        confirmarBtn = new JButton("Confirmar Matrícula");
+//        confirmarBtn.addActionListener(e -> {
+//            ArrayList<String> disciplinasSelecionadas = new ArrayList<>();
+//            for (JCheckBox checkBox : checkboxes) {
+//                if (checkBox.isSelected()) {
+//                    disciplinasSelecionadas.add(checkBox.getText());
+//                }
+//            }
+//
+//            if (disciplinasSelecionadas.isEmpty()) {
+//                JOptionPane.showMessageDialog(null, "Selecione ao menos uma disciplina.");
+//                return;
+//            }
+//
+//            // Inserir as disciplinas no banco de dados
+//            try (Connection conexao = DataBase.conectar()) {
+//                String sql = "INSERT INTO disciplinas_alunos (Alunos_Ra, Disciplinas_ID, Situacao_Disciplina) " +
+//                        "VALUES (?, (SELECT Disciplinas_ID FROM disciplinas WHERE Nome = ?), 'Ativa')";
+//                PreparedStatement stmt = conexao.prepareStatement(sql);
+//
+//                for (String disciplina : disciplinasSelecionadas) {
+//                    stmt.setString(1, raGerado);  // RA do aluno
+//                    stmt.setString(2, disciplina);
+//                    stmt.addBatch(); // Adicionar ao batch
+//                }
+//
+//                stmt.executeBatch(); // Executa as inserções
+//                JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!");
+//            } catch (SQLException ex) {
+//                JOptionPane.showMessageDialog(null, "Erro ao realizar matrícula: " + ex.getMessage());
+//            }
+//
+//            frame.dispose();
+//        });
+//
+//        panel.add(confirmarBtn);
+//        frame.add(panel);
+//        frame.setVisible(true);
+//    }
+
+    private void efetuarMatricula(String alunoRa, int cursoId) {
         JFrame frame = new JFrame("Efetuar Matrícula");
         frame.setSize(300, 400);
         frame.setLocationRelativeTo(null);
@@ -214,48 +337,58 @@ public class FormularioAlunos extends JFrame {
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Obter disciplinas específicas para o curso selecionado
-        JComboBox<String> disciplinasBox = new JComboBox<>(obterDisciplinasDoCurso(cursoId));
-        panel.add(new JLabel("Selecione a disciplina:", 0));
-        panel.add(disciplinasBox);
+        String[] disciplinas = obterDisciplinasDoCurso(cursoId);
+        JCheckBox[] checkboxes = new JCheckBox[disciplinas.length];
+
+        for (int i = 0; i < disciplinas.length; i++) {
+            checkboxes[i] = new JCheckBox(disciplinas[i]);
+            panel.add(checkboxes[i]);
+        }
 
         confirmarBtn = new JButton("Confirmar Matrícula");
-        confirmarBtn.putClientProperty("Button.margin", new Insets(1,1,1,1));
-        confirmarBtn.putClientProperty("Button.minimumWidth", 10);
-        confirmarBtn.putClientProperty("Button.minimumHeight", 15);
-
         confirmarBtn.addActionListener(e -> {
-            String disciplina = (String) disciplinasBox.getSelectedItem();
-            JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!\nDisciplina: " + disciplina);
-            frame.dispose();
-        });
+            try (Connection conexao = DataBase.conectar()) {
+                String sql = "INSERT INTO Disciplinas_Alunos (Disciplinas_ID, Alunos_Ra, Situacao_Disciplina) " +
+                        "VALUES (?, ?, ?)";
+                PreparedStatement stmt = conexao.prepareStatement(sql);
 
+                for (JCheckBox checkbox : checkboxes) {
+                    if (checkbox.isSelected()) {
+                        int disciplinaId = obterIdDisciplina(checkbox.getText());
+                        stmt.setInt(1, disciplinaId);
+                        stmt.setString(2, alunoRa); // RA correto sendo usado
+                        stmt.setString(3, "Matriculado");
+                        stmt.addBatch(); // Adiciona ao batch
+                    }
+                }
+
+                int[] resultados = stmt.executeBatch(); // Executa todas as inserções
+                JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso! " +
+                        "Disciplinas matriculadas: " + resultados.length);
+                frame.dispose();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao realizar matrícula: " + ex.getMessage());
+            }
+        });
 
         panel.add(confirmarBtn);
         frame.add(panel);
         frame.setVisible(true);
     }
 
-    // Método para obter disciplinas do banco
-    private String[] obterDisciplinasDoCurso(int cursoId) {
+    private int obterIdDisciplina(String nomeDisciplina) {
+        String query = "SELECT Disciplinas_ID FROM disciplinas WHERE Nome = ?";
         try (Connection conexao = DataBase.conectar();
-             Statement stmt = conexao.createStatement(
-                     ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-             ResultSet rs = stmt.executeQuery("SELECT nome FROM disciplinas")) {
-
-            // Navega até o final para contar o número de disciplinas
-            rs.last();
-            String[] disciplinas = new String[rs.getRow()]; // Define o tamanho do array
-            rs.beforeFirst(); // Retorna para o início do ResultSet
-
-            int i = 0;
-            while (rs.next()) {
-                disciplinas[i++] = rs.getString("nome");
+             PreparedStatement stmt = conexao.prepareStatement(query)) {
+            stmt.setString(1, nomeDisciplina);
+            ResultSet rs = stmt.executeQuery();
+            if (rs.next()) {
+                return rs.getInt("Disciplinas_ID");
             }
-            return disciplinas;
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao carregar disciplinas: " + e.getMessage());
-            return new String[]{};
+            JOptionPane.showMessageDialog(null, "Erro ao obter ID da disciplina: " + e.getMessage());
         }
+        return -1;
     }
 
     private class GradientPanel extends JPanel {
