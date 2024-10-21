@@ -7,9 +7,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
+import java.sql.*;
 
 public class FramePrincipal extends JFrame {
     //private JFrame frame;
@@ -19,6 +17,8 @@ public class FramePrincipal extends JFrame {
     private JButton creditosButton;
     private JButton removerButton;
     private JButton alterarButton;
+
+    private JButton mostrarButton;
     private String ra;
     private String novoNome;
     private int novoCursoId;
@@ -69,6 +69,12 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
+        mostrarButton = new JButton("Mostrar tabela");
+        mostrarButton.setFont(labelFont);
+        mostrarButton.setPreferredSize(new Dimension(160, 50));
+        mostrarButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        mostrarButton.setFocusPainted(false);                  // Remove a borda de foco
+
         removerButton = new JButton("Remover Aluno");
         removerButton.setFont(labelFont);
         removerButton.setPreferredSize(new Dimension(160, 50));
@@ -87,6 +93,7 @@ public class FramePrincipal extends JFrame {
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
         removerButton.addActionListener(e -> new TelaRemoverAluno());
+        mostrarButton.addActionListener(e -> mostrarTabela());
 
         // Adicionando os Botões no Painel
         GridBagConstraints gbc = new GridBagConstraints();
@@ -104,6 +111,9 @@ public class FramePrincipal extends JFrame {
 
         gbc.gridy = 3; // Próxima linha
         gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
+
+        gbc.gridy = 4; // Próxima linha
+        gradientPanel.add(mostrarButton, gbc); // Adiciona o botão de mostrar tabela
 
         // Adiciona o painel de fundo ao frame principal
         add(gradientPanel);
@@ -216,6 +226,72 @@ public class FramePrincipal extends JFrame {
         creditosDialog.setVisible(true);
     }
 
+    // Mostra a tabela toda de alunos
+    private void mostrarTabela(){
+        JDialog tabelaDialog = new JDialog(this, "Tabela", true);
+        tabelaDialog.setSize(800, 600);
+        tabelaDialog.setLocationRelativeTo(null);
+
+        try (Connection conexao = DataBase.conectar();
+             Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+             ResultSet rs = stmt.executeQuery("SELECT Ra, Nome, Cursos_ID FROM alunos ORDER BY Nome ASC");
+        ) {
+
+            // Criacao dos parametros da tabela
+            String[] nomesColunas = {"RA", "Nome", "Curso"};
+            Object[][] dados = new Object[getQntAlunos()][3];
+
+            // Insere os alunos na tabela
+            for(int i=0;rs.next();i++) {
+                String ra = rs.getString("Ra");
+                String nome = rs.getString("Nome");
+                int curso = rs.getInt("Cursos_ID");
+                Object[] elemento = {ra, nome, curso};
+                dados[i] = elemento;
+            }
+
+            // Painel de fundo com degradê
+            GradientPanel tabelaPanel = new GradientPanel("radial");
+            tabelaPanel.setLayout(null);
+            tabelaPanel.setSize(800, 600);
+
+            // Tabela em si
+            JTable tabelaTable = new JTable(dados, nomesColunas);
+            tabelaTable.getTableHeader().setBounds(50, 30, 700, 20);
+            tabelaTable.setBounds(50, 50, 700, 20*getQntAlunos());
+
+            // Adiciona a tabela e o Header dela no Painel de fundo
+            tabelaPanel.add(tabelaTable.getTableHeader());
+            tabelaPanel.add(tabelaTable);
+
+            // Adiciona a tabela ao diálogo e exibe
+            tabelaDialog.add(tabelaPanel);
+            tabelaDialog.setVisible(true);
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar alunos: " + e.getMessage());
+        }
+
+    }
+
+    // Retorna a qnt de elementos na lista de Alunos
+    private int getQntAlunos(){
+        int R = 0;
+        try (   Connection conexao = DataBase.conectar();
+                Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = stmt.executeQuery("SELECT COUNT(Ra) FROM alunos");
+        ) {
+
+            while(rs.next()) {
+                R = rs.getInt("COUNT(Ra)");
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar alunos: " + e.getMessage());
+        }
+
+        return R;
+    }
 
     private class GradientPanel extends JPanel {
         private String tipoGradiente;
