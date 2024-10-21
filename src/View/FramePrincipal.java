@@ -17,10 +17,8 @@ public class FramePrincipal extends JFrame {
     private JButton cadastrarAluno;
     private JButton sairButton;
     private JButton creditosButton;
-    private JButton alterarButton;
-    private String ra;
-    private String novoNome;
-    private int novoCursoId;
+
+
 
 
     public FramePrincipal(){
@@ -70,15 +68,9 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
-        alterarButton = new JButton("Alterar Cadastro");
-        alterarButton.setPreferredSize(new Dimension(160, 50));
-        alterarButton.setFont(labelFont);
-        alterarButton.setContentAreaFilled(true);
-        alterarButton.setFocusPainted(false);
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
-        alterarButton.addActionListener(e -> alterarCadastro(ra, novoNome, novoCursoId));
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
 
@@ -90,13 +82,13 @@ public class FramePrincipal extends JFrame {
         gbc.gridy = 0;
         gradientPanel.add(cadastrarAluno, gbc); // Adiciona o botão de cadastro
 
-        gbc.gridy = 1;
-        gradientPanel.add(alterarButton, gbc);
+//        gbc.gridy = 1;
+//        gradientPanel.add(alterarButton, gbc);
 
-        gbc.gridy = 2;
+        gbc.gridy = 1;
         gradientPanel.add(creditosButton, gbc); // Adiciona o botao de creditos
 
-        gbc.gridy = 3; // Próxima linha
+        gbc.gridy = 2; // Próxima linha
         gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
 
         // Adiciona o painel de fundo ao frame principal
@@ -105,77 +97,6 @@ public class FramePrincipal extends JFrame {
         // Exibe a janela
         setVisible(true);
     }
-
-    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
-        JFrame frame = new JFrame("Atualizar Cadastro");
-        frame.setSize(400, 400);
-        frame.setLocationRelativeTo(null);
-        frame.add(formularioAlterarCadastro());
-        frame.setVisible(true);
-
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-
-        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
-
-        try (Connection conexao = DataBase.conectar();
-             PreparedStatement stmt = conexao.prepareStatement(sql)) {
-
-            stmt.setString(1, novoNome);
-            stmt.setInt(2, novoCursoId);
-            stmt.setString(3, ra);
-
-            int linhasAfetadas = stmt.executeUpdate();
-
-            if (linhasAfetadas > 0) {
-                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
-            } else {
-                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
-        }
-    }
-
-    public JPanel formularioAlterarCadastro(){
-        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
-
-        JLabel raLabel = new JLabel("RA:");
-        JTextField raField = new JTextField();
-
-        JLabel nomeLabel = new JLabel("Novo Nome");
-        JTextField nomeField = new JTextField();
-
-        JLabel cursoLabel = new JLabel("Novo Curso ID:");
-        JTextField cursoField = new JTextField();
-
-        JButton atualizarButton = new JButton("Atualizar");
-
-        atualizarButton.addActionListener(e -> {
-            String ra = raField.getText();
-            String novoNome = nomeField.getText();
-            int novoCursoId;
-
-            try {
-                novoCursoId = Integer.parseInt(cursoField.getText());
-                alterarCadastro(ra, novoNome, novoCursoId);
-            } catch (NumberFormatException ex){
-                JOptionPane.showMessageDialog(null, "ID do curso inválido");
-            }
-        });
-
-        painel.add(raLabel);
-        painel.add(raField);
-        painel.add(nomeField);
-        painel.add(nomeLabel);
-        painel.add(cursoLabel);
-        painel.add(cursoField);
-        painel.add(new JLabel());
-        painel.add(atualizarButton);
-
-        return painel;
-    }
-
 
 
     // Método para mostrar a janela de créditos
