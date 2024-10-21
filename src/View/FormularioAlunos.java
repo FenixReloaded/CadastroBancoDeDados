@@ -99,12 +99,13 @@ public class FormularioAlunos extends JFrame {
         setVisible(true);
     }
 
+
     // Método para obter cursos do banco
     private void carregarCursos() {
         try (Connection conexao = DataBase.conectar();
              Statement stmt = conexao.createStatement(
                      ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
-             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos")) {
+             ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos ORDER BY Cursos_ID ASC")) {
 
             cursoComboBox.removeAllItems(); // Limpa o comboBox
 
@@ -154,6 +155,7 @@ public class FormularioAlunos extends JFrame {
         public void actionPerformed(ActionEvent e) {
             String nome = nomeField.getText();
             String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
+
             if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
                 return;
@@ -168,6 +170,7 @@ public class FormularioAlunos extends JFrame {
             }
 
             String ra = gerarRAUnico(); // RA único gerado
+
             int matriculaId = gerarMatricula();
 
             try (Connection conexao = DataBase.conectar()) {
@@ -183,6 +186,7 @@ public class FormularioAlunos extends JFrame {
 
                 // Passar o RA diretamente ao método de matrícula
                 efetuarMatricula(ra, cursoId);
+
             } catch (SQLException ex) {
                 JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
             }
@@ -236,98 +240,6 @@ public class FormularioAlunos extends JFrame {
         return novoRegistroId;
     }
 
-//    private void efetuarMatricula(int matriculaId, int cursoId) {
-//        JFrame frame = new JFrame("Efetuar Matrícula");
-//        frame.setSize(300, 400);
-//        frame.setLocationRelativeTo(null);
-//
-//        JPanel panel = new JPanel(new GridLayout(0, 1));
-//        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-//
-//        // Obter disciplinas específicas para o curso selecionado
-//        JComboBox<String> disciplinasBox = new JComboBox<>(obterDisciplinasDoCurso(cursoId));
-//        panel.add(new JLabel("Selecione a disciplina:", 0));
-//        panel.add(disciplinasBox);
-//
-//        confirmarBtn = new JButton("Confirmar Matrícula");
-//        confirmarBtn.putClientProperty("Button.margin", new Insets(1,1,1,1));
-//        confirmarBtn.putClientProperty("Button.minimumWidth", 10);
-//        confirmarBtn.putClientProperty("Button.minimumHeight", 15);
-//
-//        confirmarBtn.addActionListener(e -> {
-//            String disciplina = (String) disciplinasBox.getSelectedItem();
-//            JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!\nDisciplina: " + disciplina);
-//            frame.dispose();
-//        });
-//
-//
-//        panel.add(confirmarBtn);
-//        frame.add(panel);
-//        frame.setVisible(true);
-//    }
-
-    //FUNCIONA MELHOR
-//    private void efetuarMatricula(int matriculaId, int cursoId) {
-//        JFrame frame = new JFrame("Efetuar Matrícula");
-//        frame.setSize(400, 400);
-//        frame.setLocationRelativeTo(null);
-//
-//        JPanel panel = new JPanel(new GridLayout(0, 1));
-//        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-//
-//        // Obter disciplinas do curso selecionado
-//        String[] disciplinas = obterDisciplinasDoCurso(cursoId);
-//        ArrayList<JCheckBox> checkboxes = new ArrayList<>();
-//
-//        // Adicionar as disciplinas como checkboxes
-//        panel.add(new JLabel("Selecione as disciplinas:", SwingConstants.CENTER));
-//        for (String disciplina : disciplinas) {
-//            JCheckBox checkBox = new JCheckBox(disciplina);
-//            checkboxes.add(checkBox);
-//            panel.add(checkBox);
-//        }
-//
-//        // Botão para confirmar a matrícula
-//        confirmarBtn = new JButton("Confirmar Matrícula");
-//        confirmarBtn.addActionListener(e -> {
-//            ArrayList<String> disciplinasSelecionadas = new ArrayList<>();
-//            for (JCheckBox checkBox : checkboxes) {
-//                if (checkBox.isSelected()) {
-//                    disciplinasSelecionadas.add(checkBox.getText());
-//                }
-//            }
-//
-//            if (disciplinasSelecionadas.isEmpty()) {
-//                JOptionPane.showMessageDialog(null, "Selecione ao menos uma disciplina.");
-//                return;
-//            }
-//
-//            // Inserir as disciplinas no banco de dados
-//            try (Connection conexao = DataBase.conectar()) {
-//                String sql = "INSERT INTO disciplinas_alunos (Alunos_Ra, Disciplinas_ID, Situacao_Disciplina) " +
-//                        "VALUES (?, (SELECT Disciplinas_ID FROM disciplinas WHERE Nome = ?), 'Ativa')";
-//                PreparedStatement stmt = conexao.prepareStatement(sql);
-//
-//                for (String disciplina : disciplinasSelecionadas) {
-//                    stmt.setString(1, raGerado);  // RA do aluno
-//                    stmt.setString(2, disciplina);
-//                    stmt.addBatch(); // Adicionar ao batch
-//                }
-//
-//                stmt.executeBatch(); // Executa as inserções
-//                JOptionPane.showMessageDialog(null, "Matrícula realizada com sucesso!");
-//            } catch (SQLException ex) {
-//                JOptionPane.showMessageDialog(null, "Erro ao realizar matrícula: " + ex.getMessage());
-//            }
-//
-//            frame.dispose();
-//        });
-//
-//        panel.add(confirmarBtn);
-//        frame.add(panel);
-//        frame.setVisible(true);
-//    }
-
     private void efetuarMatricula(String alunoRa, int cursoId) {
         JFrame frame = new JFrame("Efetuar Matrícula");
         frame.setSize(300, 400);
@@ -346,6 +258,7 @@ public class FormularioAlunos extends JFrame {
         }
 
         confirmarBtn = new JButton("Confirmar Matrícula");
+
         confirmarBtn.addActionListener(e -> {
             try (Connection conexao = DataBase.conectar()) {
                 String sql = "INSERT INTO Disciplinas_Alunos (Disciplinas_ID, Alunos_Ra, Situacao_Disciplina) " +

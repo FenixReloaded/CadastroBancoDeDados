@@ -1,10 +1,15 @@
 package View;
 
+import Controller.DataBase;
 import com.formdev.flatlaf.themes.FlatMacLightLaf;
 
 import javax.swing.*;
+import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
 
 public class FramePrincipal extends JFrame {
     //private JFrame frame;
@@ -13,7 +18,10 @@ public class FramePrincipal extends JFrame {
     private JButton sairButton;
     private JButton creditosButton;
     private JButton removerButton;
-
+    private JButton alterarButton;
+    private String ra;
+    private String novoNome;
+    private int novoCursoId;
 
     public FramePrincipal(){
         try {
@@ -67,9 +75,15 @@ public class FramePrincipal extends JFrame {
         removerButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         removerButton.setFocusPainted(false);                  // Remove a borda de foco
 
+        alterarButton = new JButton("Alterar Cadastro");
+        alterarButton.setPreferredSize(new Dimension(160, 50));
+        alterarButton.setFont(labelFont);
+        alterarButton.setContentAreaFilled(true);
+        alterarButton.setFocusPainted(false);
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
+        alterarButton.addActionListener(e -> alterarCadastro(ra, novoNome, novoCursoId));
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
         removerButton.addActionListener(e -> new TelaRemoverAluno());
@@ -97,6 +111,78 @@ public class FramePrincipal extends JFrame {
         // Exibe a janela
         setVisible(true);
     }
+
+    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
+        JFrame frame = new JFrame("Atualizar Cadastro");
+        frame.setSize(400, 400);
+        frame.setLocationRelativeTo(null);
+        frame.add(formularioAlterarCadastro());
+        frame.setVisible(true);
+
+        JPanel panel = new JPanel(new GridLayout(0, 1));
+        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+
+        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
+
+        try (Connection conexao = DataBase.conectar();
+             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+
+            stmt.setString(1, novoNome);
+            stmt.setInt(2, novoCursoId);
+            stmt.setString(3, ra);
+
+            int linhasAfetadas = stmt.executeUpdate();
+
+            if (linhasAfetadas > 0) {
+                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
+            } else {
+                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
+            }
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
+        }
+    }
+
+    public JPanel formularioAlterarCadastro(){
+        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
+
+        JLabel raLabel = new JLabel("RA:");
+        JTextField raField = new JTextField();
+
+        JLabel nomeLabel = new JLabel("Novo Nome");
+        JTextField nomeField = new JTextField();
+
+        JLabel cursoLabel = new JLabel("Novo Curso ID:");
+        JTextField cursoField = new JTextField();
+
+        JButton atualizarButton = new JButton("Atualizar");
+
+        atualizarButton.addActionListener(e -> {
+            String ra = raField.getText();
+            String novoNome = nomeField.getText();
+            int novoCursoId;
+
+            try {
+                novoCursoId = Integer.parseInt(cursoField.getText());
+                alterarCadastro(ra, novoNome, novoCursoId);
+            } catch (NumberFormatException ex){
+                JOptionPane.showMessageDialog(null, "ID do curso inválido");
+            }
+        });
+
+        painel.add(raLabel);
+        painel.add(raField);
+        painel.add(nomeField);
+        painel.add(nomeLabel);
+        painel.add(cursoLabel);
+        painel.add(cursoField);
+        painel.add(new JLabel());
+        painel.add(atualizarButton);
+
+        return painel;
+    }
+
+
 
     // Método para mostrar a janela de créditos
     private void mostrarCreditos() {
