@@ -12,6 +12,7 @@ public class FramePrincipal extends JFrame {
     private JButton cadastrarAluno;
     private JButton sairButton;
     private JButton creditosButton;
+    private JButton removerButton;
 
 
     public FramePrincipal(){
@@ -48,7 +49,6 @@ public class FramePrincipal extends JFrame {
         cadastrarAluno.setFocusPainted(false);                  // Remove a borda de foco
         //cadastrarAluno.setBorderPainted(false);                 // Remove a borda padrão
 
-
         sairButton = new JButton("Sair");
         sairButton.setFont(labelFont);
         sairButton.setPreferredSize(new Dimension(160, 50));
@@ -61,11 +61,18 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
+        removerButton = new JButton("Remover Aluno");
+        removerButton.setFont(labelFont);
+        removerButton.setPreferredSize(new Dimension(160, 50));
+        removerButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
+        removerButton.setFocusPainted(false);                  // Remove a borda de foco
+
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
+        removerButton.addActionListener(e -> new TelaRemoverAluno());
 
         // Adicionando os Botões no Painel
         GridBagConstraints gbc = new GridBagConstraints();
@@ -75,10 +82,13 @@ public class FramePrincipal extends JFrame {
         gbc.gridy = 0;
         gradientPanel.add(cadastrarAluno, gbc); // Adiciona o botão de cadastro
 
-        gbc.gridy = 1;
+        gbc.gridy = 1; // Próxima linha
+        gradientPanel.add(removerButton, gbc); // Adiciona o botão de remover aluno
+
+        gbc.gridy = 2;
         gradientPanel.add(creditosButton, gbc); // Adiciona o botao de creditos
 
-        gbc.gridy = 2; // Próxima linha
+        gbc.gridy = 3; // Próxima linha
         gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
 
         // Adiciona o painel de fundo ao frame principal
