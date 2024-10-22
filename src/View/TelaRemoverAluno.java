@@ -88,7 +88,7 @@ public class TelaRemoverAluno extends JFrame {
     private class RemoverListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
-            String ra = nomeField.getText();
+            String ra = nomeField.getText(); // Aqui você pode substituir por CPF, caso queira buscar por CPF
 
             if (ra.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "RA não pode estar vazio.");
@@ -96,6 +96,17 @@ public class TelaRemoverAluno extends JFrame {
             }
 
             try (Connection conexao = DataBase.conectar()) {
+                // Verificar se o RA (ou CPF) existe no banco de dados
+                try (PreparedStatement verificarAluno = conexao.prepareStatement("SELECT Ra FROM alunos WHERE Ra = ?")) {
+                    verificarAluno.setString(1, ra);
+                    ResultSet resultado = verificarAluno.executeQuery();
+
+                    if (!resultado.next()) { // Se não encontrar o RA, exibe uma mensagem ao usuário
+                        JOptionPane.showMessageDialog(null, "RA não encontrado no banco de dados.");
+                        return;
+                    }
+                }
+
                 // Desativar verificações de chave estrangeira
                 try (PreparedStatement disableFKChecks = conexao.prepareStatement("SET FOREIGN_KEY_CHECKS = 0;")) {
                     disableFKChecks.executeUpdate();
