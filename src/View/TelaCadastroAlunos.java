@@ -14,17 +14,17 @@ import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-
+@Deprecated
 public class TelaCadastroAlunos extends JFrame {
     private JTextField raField, nomeField, cursoField;
     private JButton cadastrarButton, limparButton;
     private JLabel tituloLabel;
-
+    @Deprecated
     public TelaCadastroAlunos() {
         super("Cadastro de Alunos");
         criartela();
     }
-
+    @Deprecated
     private void criartela() {
         // Aplicando o tema FlatLaf
         FlatLightLaf.setup();
@@ -126,7 +126,7 @@ public class TelaCadastroAlunos extends JFrame {
 
         setVisible(true);
     }
-
+    @Deprecated
     private void cadastrarAluno() {
         String ra = raField.getText();
         String nome = nomeField.getText();
@@ -147,7 +147,7 @@ public class TelaCadastroAlunos extends JFrame {
             JOptionPane.showMessageDialog(this, "Erro ao cadastrar aluno: " + ex.getMessage());
         }
     }
-
+    @Deprecated
     private void limparCampos() {
         raField.setText("");
         nomeField.setText("");

@@ -1,7 +1,7 @@
 <component name="libraryTable">
   <library name="flatlaf-3.5.1">
     <CLASSES>
-      <root url="jar://$PROJECT_DIR$/../../MySQL/BIBLIOTECAS/flatlaf-3.5.1.jar!/" />
+      <root url="jar://D:/Arquivos/Documentos Gerais/Programas/BibliotecaExterna_FlatLaf/flatlaf-3.5.1.jar!/" />
     </CLASSES>
     <JAVADOC />
     <SOURCES />

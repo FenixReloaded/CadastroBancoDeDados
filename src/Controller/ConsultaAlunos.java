@@ -7,9 +7,10 @@ import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
 import java.sql.*;
 
+    @Deprecated
     public class ConsultaAlunos extends JFrame {
         private JTextArea resultadoArea;
-
+        @Deprecated
         public ConsultaAlunos() {
             setTitle("Consultas de Alunos");
             setLayout(new BorderLayout());
@@ -36,13 +37,13 @@ import java.sql.*;
 
             setVisible(true);
         }
-
+        @Deprecated
         private void addBotao(String texto, String query, JPanel panel) {
             JButton botao = new JButton(texto);
             botao.addActionListener(e -> executarConsulta(query));
             panel.add(botao);
         }
-
+        @Deprecated
         private void executarConsulta(String query) {
             try (Connection conexao = DataBase.conectar();
                  Statement stmt = conexao.createStatement();

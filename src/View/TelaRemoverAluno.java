@@ -18,7 +18,7 @@ public class TelaRemoverAluno extends JFrame {
     private JComboBox<String> cursoComboBox;
     private JButton removerBtn;
     private JPanel panel;
-    private JButton confirmarBtn;
+    //private JButton confirmarBtn;
 
     public TelaRemoverAluno() {
         try {
@@ -38,12 +38,12 @@ public class TelaRemoverAluno extends JFrame {
             UIManager.put("Button.iconTextGap", 5);
             UIManager.put("Button.font", new Font("Comic Sans MS", Font.BOLD, 13));
 
-        } catch (Exception e){
+        } catch (Exception e) {
             e.printStackTrace();
         }
 
-        setTitle("Inserção de Dados - Alunos");
-        setSize(400, 400);
+        setTitle("Remover Dados - Alunos");
+        setSize(400, 550);
         setLocationRelativeTo(null); // Centraliza a janela
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -84,6 +84,47 @@ public class TelaRemoverAluno extends JFrame {
         setVisible(true);
     }
 
+    // Listener para o botao remover
+    private class RemoverListener implements ActionListener {
+        @Override
+        public void actionPerformed(ActionEvent e) {
+            String ra = nomeField.getText();
+
+            if (ra.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "RA não pode estar vazio.");
+                return;
+            }
+
+            try (Connection conexao = DataBase.conectar()) {
+                // Desativar verificações de chave estrangeira
+                try (PreparedStatement disableFKChecks = conexao.prepareStatement("SET FOREIGN_KEY_CHECKS = 0;")) {
+                    disableFKChecks.executeUpdate();
+                }
+
+                // Excluir o aluno
+                try (PreparedStatement deleteAluno = conexao.prepareStatement("DELETE FROM alunos WHERE Ra = ?;")) {
+                    deleteAluno.setString(1, ra);
+                    deleteAluno.executeUpdate();
+                }
+
+                // Excluir registros de disciplinas vinculados ao aluno
+                try (PreparedStatement deleteDisciplinas = conexao.prepareStatement("DELETE FROM disciplinas_alunos WHERE Alunos_Ra = ?;")) {
+                    deleteDisciplinas.setString(1, ra);
+                    deleteDisciplinas.executeUpdate();
+                }
+
+                // Reativar verificações de chave estrangeira
+                try (PreparedStatement enableFKChecks = conexao.prepareStatement("SET FOREIGN_KEY_CHECKS = 1;")) {
+                    enableFKChecks.executeUpdate();
+                }
+
+                JOptionPane.showMessageDialog(null, "Aluno removido com sucesso!");
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, "Erro ao remover usuario: " + ex.getMessage());
+            }
+        }
+    }
+
     private class GradientPanel extends JPanel {
         private String tipoGradiente;
 
@@ -106,7 +147,8 @@ public class TelaRemoverAluno extends JFrame {
             g2d.fillRect(0, 0, width, height);
         }
     }
-
+}
+    //REMOVER
 //    private class RemoverListener implements ActionListener {
 //        @Override
 //        public void actionPerformed(ActionEvent e) {
@@ -135,43 +177,4 @@ public class TelaRemoverAluno extends JFrame {
 //            //"DELETE FROM matriculas WHERE Registro_ID = ;\n" +
 //        }
 //    }
-private class RemoverListener implements ActionListener {
-    @Override
-    public void actionPerformed(ActionEvent e) {
-        String ra = nomeField.getText();
 
-        if (ra.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "RA não pode estar vazio.");
-            return;
-        }
-
-        try (Connection conexao = DataBase.conectar()) {
-            // Desativar verificações de chave estrangeira
-            try (PreparedStatement disableFKChecks = conexao.prepareStatement("SET FOREIGN_KEY_CHECKS = 0;")) {
-                disableFKChecks.executeUpdate();
-            }
-
-            // Excluir o aluno
-            try (PreparedStatement deleteAluno = conexao.prepareStatement("DELETE FROM alunos WHERE Ra = ?;")) {
-                deleteAluno.setString(1, ra);
-                deleteAluno.executeUpdate();
-            }
-
-            // Excluir registros de disciplinas vinculados ao aluno
-            try (PreparedStatement deleteDisciplinas = conexao.prepareStatement("DELETE FROM disciplinas_alunos WHERE Alunos_Ra = ?;")) {
-                deleteDisciplinas.setString(1, ra);
-                deleteDisciplinas.executeUpdate();
-            }
-
-            // Reativar verificações de chave estrangeira
-            try (PreparedStatement enableFKChecks = conexao.prepareStatement("SET FOREIGN_KEY_CHECKS = 1;")) {
-                enableFKChecks.executeUpdate();
-            }
-
-            JOptionPane.showMessageDialog(null, "Aluno removido com sucesso!");
-        } catch (SQLException ex) {
-            JOptionPane.showMessageDialog(null, "Erro ao remover usuario: " + ex.getMessage());
-        }
-    }
-}
-}
