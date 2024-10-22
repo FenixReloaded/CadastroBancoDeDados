@@ -288,7 +288,7 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
-    // Método para gerar RA único
+    // Metodo para gerar RA unico
     private String gerarRAUnico() {
         Random random = new Random();
         String ra;
@@ -309,7 +309,7 @@ public class FormularioAlunos extends JFrame {
         return ra;
     }
 
-    // Método para gerar número de matrícula incremental
+    // Metodo para gerar numero de matricula incremental
     private int gerarMatricula() {
         int novoRegistroId = 1; // Valor inicial caso a tabela esteja vazia
 
@@ -335,6 +335,7 @@ public class FormularioAlunos extends JFrame {
         return novoRegistroId;
     }
 
+    // Metodo para efetuar a matricula em si
     private void efetuarMatricula(String alunoRa, int cursoId) {
         JFrame frame = new JFrame("Efetuar Matrícula");
         frame.setSize(300, 400);
@@ -421,74 +422,4 @@ public class FormularioAlunos extends JFrame {
             g2d.fillRect(0, 0, width, height);
         }
     }
-    //    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
-////        JFrame frame = new JFrame("Atualizar Cadastro");
-////        frame.setSize(400, 400);
-////        frame.setLocationRelativeTo(null);
-////        frame.add(formularioAlterarCadastro());
-////        frame.setVisible(true);
-////
-////        JPanel panel = new JPanel(new GridLayout(0, 1));
-////        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-//
-//        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
-//
-//        try (Connection conexao = DataBase.conectar();
-//             PreparedStatement stmt = conexao.prepareStatement(sql)) {
-//
-//            stmt.setString(1, novoNome);
-//            stmt.setInt(2, novoCursoId);
-//            stmt.setString(3, ra);
-//
-//            int linhasAfetadas = stmt.executeUpdate();
-//
-//            if (linhasAfetadas > 0) {
-//                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
-//            } else {
-//                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
-//            }
-//        } catch (SQLException e) {
-//            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
-//        }
-//    }
-
-//    public JPanel formularioAlterarCadastro(){
-//        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
-//
-//        JLabel raLabel = new JLabel("RA:");
-//        JTextField raField = new JTextField();
-//
-//        JLabel nomeLabel = new JLabel("Novo Nome");
-//        JTextField nomeField = new JTextField();
-//
-//        JLabel cursoLabel = new JLabel("Novo Curso ID:");
-//        JTextField cursoField = new JTextField();
-//
-//        JButton atualizarButton = new JButton("Atualizar");
-//
-//        atualizarButton.addActionListener(e -> {
-//            String ra = raField.getText();
-//            String novoNome = nomeField.getText();
-//            int novoCursoId;
-//
-//            try {
-//                novoCursoId = Integer.parseInt(cursoField.getText());
-//                alterarCadastro(ra, novoNome, novoCursoId);
-//            } catch (NumberFormatException ex){
-//                JOptionPane.showMessageDialog(null, "ID do curso inválido");
-//            }
-//        });
-//
-//        painel.add(raLabel);
-//        painel.add(raField);
-//        painel.add(nomeField);
-//        painel.add(nomeLabel);
-//        painel.add(cursoLabel);
-//        painel.add(cursoField);
-//        painel.add(new JLabel());
-//        painel.add(atualizarButton);
-//
-//        return painel;
-//    }
-
 }

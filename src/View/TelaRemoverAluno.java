@@ -148,33 +148,3 @@ public class TelaRemoverAluno extends JFrame {
         }
     }
 }
-    //REMOVER
-//    private class RemoverListener implements ActionListener {
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            String ra = nomeField.getText();
-//
-//            if (ra.isEmpty()) {
-//                JOptionPane.showMessageDialog(null, "RA não pode estar vazio.");
-//                return;
-//            }
-//
-//            try (Connection conexao = DataBase.conectar()) {
-//                //String matricula = "SELECT Matriculas_ID FROM alunos WHERE Ra = ? ";
-//
-//                String sql = "SET FOREIGN_KEY_CHECKS = 0;" +
-//                        "DELETE FROM alunos WHERE Ra = ?;" +
-//                        "SET FOREIGN_KEY_CHECKS = 1;"
-//                PreparedStatement stmt = conexao.prepareStatement(sql);
-//                stmt.setString(1, ra);
-//
-//
-//                stmt.executeUpdate();
-//                JOptionPane.showMessageDialog(null, "Aluno removido com sucesso!");
-//            } catch (SQLException ex) {
-//                JOptionPane.showMessageDialog(null, "Erro ao remover usuario: " + ex.getMessage());
-//            }
-//            //"DELETE FROM matriculas WHERE Registro_ID = ;\n" +
-//        }
-//    }
-

@@ -7,6 +7,7 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.net.StandardSocketOptions;
 import java.sql.*;
 
 public class FramePrincipal extends JFrame {
@@ -225,6 +226,7 @@ public class FramePrincipal extends JFrame {
         creditosDialog.setVisible(true);
     }
 
+
     // Mostra a tabela toda de alunos
     private void mostrarTabelaAlunos(){ // Colocar estilos flatlaf nas tabelas
         JDialog tabelaDialog = new JDialog(this, "Tabela de Alunos", true);
@@ -240,11 +242,12 @@ public class FramePrincipal extends JFrame {
             String[] nomesColunas = {"RA", "Nome", "Curso"};
             Object[][] dados = new Object[getQntAlunos()][3];
 
-            // Insere os alunos na tabela
+            // Insere os alunos na JTable
             for(int i=0;rs.next();i++) {
-                String ra = rs.getString("Ra");
-                String nome = rs.getString("Nome");
-                int curso = rs.getInt("Cursos_ID");
+                String ra = rs.getString("Ra");         // RA do aluno que sera mostrado
+                String nome = rs.getString("Nome");     // Nome do aluno que sera mostrado
+                int cursoId = rs.getInt("Cursos_ID");   // Retorna o ID do curso que sera usado pela funcao getNomeCurso(int).
+                String curso = getNomeCurso(cursoId);              // Nome do curso que sera mostrado
                 Object[] elemento = {ra, nome, curso};
                 dados[i] = elemento;
             }
@@ -273,7 +276,7 @@ public class FramePrincipal extends JFrame {
 
     }
 
-    // Retorna a qnt de elementos na lista de Alunos
+    // Retorna a qnt de alunos na lista de Alunos
     private int getQntAlunos(){
         int R = 0;
         try (   Connection conexao = DataBase.conectar();
@@ -283,6 +286,26 @@ public class FramePrincipal extends JFrame {
 
             while(rs.next()) {
                 R = rs.getInt("COUNT(Ra)");
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar alunos: " + e.getMessage());
+        }
+
+        return R;
+    }
+
+    // Retorna o nome do curso, recebendo o seu ID.
+    private String getNomeCurso(int i){
+        String R = null;
+        try (   Connection conexao = DataBase.conectar();
+                Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = stmt.executeQuery("SELECT Nomes FROM cursos WHERE Cursos_ID = " + i);
+
+        ) {
+            while(rs.next()) {
+                R = rs.getString("Nomes");
+
             }
 
         } catch (SQLException e) {
