@@ -21,6 +21,7 @@ public class FramePrincipal extends JFrame {
     private String ra;
     private String novoNome;
     private int novoCursoId;
+    private String novoCpf;
     //private JFrame frame;
 
     public FramePrincipal(){
@@ -89,7 +90,7 @@ public class FramePrincipal extends JFrame {
 
         // Ações dos Botões
         cadastrarAluno.addActionListener(e -> new FormularioAlunos());
-        alterarButton.addActionListener(e -> alterarCadastro(ra, novoNome, novoCursoId));
+        alterarButton.addActionListener(e -> alterarCadastro(ra, novoNome, novoCursoId, novoCpf));
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
         removerButton.addActionListener(e -> new TelaRemoverAluno());
@@ -123,7 +124,38 @@ public class FramePrincipal extends JFrame {
         setVisible(true);
     }
 
-    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
+//    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
+//        JFrame frame = new JFrame("Atualizar Cadastro");
+//        frame.setSize(400, 400);
+//        frame.setLocationRelativeTo(null);
+//        frame.add(formularioAlterarCadastro());
+//        frame.setVisible(true);
+//
+//        JPanel panel = new JPanel(new GridLayout(0, 1));
+//        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+//
+//        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
+//
+//        try (Connection conexao = DataBase.conectar();
+//             PreparedStatement stmt = conexao.prepareStatement(sql)) {
+//
+//            stmt.setString(1, novoNome);
+//            stmt.setInt(2, novoCursoId);
+//            stmt.setString(3, ra);
+//
+//            int linhasAfetadas = stmt.executeUpdate();
+//
+//            if (linhasAfetadas > 0) {
+//                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
+//            } else {
+//                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
+//            }
+//        } catch (SQLException e) {
+//            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
+//        }
+//    }
+
+    private void alterarCadastro(String ra, String novoNome, int novoCursoId, String novoCpf){
         JFrame frame = new JFrame("Atualizar Cadastro");
         frame.setSize(400, 400);
         frame.setLocationRelativeTo(null);
@@ -133,14 +165,15 @@ public class FramePrincipal extends JFrame {
         JPanel panel = new JPanel(new GridLayout(0, 1));
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
-        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
+        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ?, Cpf = ? WHERE Ra = ?";
 
         try (Connection conexao = DataBase.conectar();
              PreparedStatement stmt = conexao.prepareStatement(sql)) {
 
             stmt.setString(1, novoNome);
             stmt.setInt(2, novoCursoId);
-            stmt.setString(3, ra);
+            stmt.setString(3, novoCpf);  // Adicionando CPF no update
+            stmt.setString(4, ra);
 
             int linhasAfetadas = stmt.executeUpdate();
 
@@ -154,44 +187,99 @@ public class FramePrincipal extends JFrame {
         }
     }
 
-    public JPanel formularioAlterarCadastro(){
-        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
+//    public JPanel formularioAlterarCadastro(){
+//        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
+//
+//        JLabel raLabel = new JLabel("RA:");
+//        JTextField raField = new JTextField();
+//
+//        JLabel nomeLabel = new JLabel("Novo Nome");
+//        JTextField nomeField = new JTextField();
+//
+//        JLabel cursoLabel = new JLabel("Novo Curso ID:");
+//        JTextField cursoField = new JTextField();
+//
+//        JButton atualizarButton = new JButton("Atualizar");
+//
+//        atualizarButton.addActionListener(e -> {
+//            String ra = raField.getText();
+//            String novoNome = nomeField.getText();
+//            int novoCursoId;
+//
+//            try {
+//                novoCursoId = Integer.parseInt(cursoField.getText());
+//                alterarCadastro(ra, novoNome, novoCursoId);
+//            } catch (NumberFormatException ex){
+//                JOptionPane.showMessageDialog(null, "ID do curso inválido");
+//            }
+//        });
+//
+//        painel.add(raLabel);
+//        painel.add(raField);
+//        painel.add(nomeField);
+//        painel.add(nomeLabel);
+//        painel.add(cursoLabel);
+//        painel.add(cursoField);
+//        painel.add(new JLabel());
+//        painel.add(atualizarButton);
+//
+//        return painel;
+//    }
+public JPanel formularioAlterarCadastro(){
+    JPanel painel = new JPanel(new GridLayout(5, 2, 10, 10));  // 5 campos agora
 
-        JLabel raLabel = new JLabel("RA:");
-        JTextField raField = new JTextField();
+    JLabel raLabel = new JLabel("RA:");
+    JTextField raField = new JTextField();
 
-        JLabel nomeLabel = new JLabel("Novo Nome");
-        JTextField nomeField = new JTextField();
+    JLabel nomeLabel = new JLabel("Novo Nome");
+    JTextField nomeField = new JTextField();
 
-        JLabel cursoLabel = new JLabel("Novo Curso ID:");
-        JTextField cursoField = new JTextField();
+    JLabel cursoLabel = new JLabel("Novo Curso ID:");
+    JTextField cursoField = new JTextField();
 
-        JButton atualizarButton = new JButton("Atualizar");
+    JLabel cpfLabel = new JLabel("Novo CPF:");
+    JTextField cpfField = new JTextField();  // Campo para o CPF
 
-        atualizarButton.addActionListener(e -> {
-            String ra = raField.getText();
-            String novoNome = nomeField.getText();
-            int novoCursoId;
+    JButton atualizarButton = new JButton("Atualizar");
 
-            try {
-                novoCursoId = Integer.parseInt(cursoField.getText());
-                alterarCadastro(ra, novoNome, novoCursoId);
-            } catch (NumberFormatException ex){
-                JOptionPane.showMessageDialog(null, "ID do curso inválido");
-            }
-        });
+    atualizarButton.addActionListener(e -> {
+        String ra = raField.getText();
+        String novoNome = nomeField.getText();
+        String novoCpf = cpfField.getText();
+        int novoCursoId;
 
-        painel.add(raLabel);
-        painel.add(raField);
-        painel.add(nomeField);
-        painel.add(nomeLabel);
-        painel.add(cursoLabel);
-        painel.add(cursoField);
-        painel.add(new JLabel());
-        painel.add(atualizarButton);
+        // Validação simples de CPF
+        if (!validarCpf(novoCpf)) {
+            JOptionPane.showMessageDialog(null, "CPF inválido.");
+            return;
+        }
 
-        return painel;
+        try {
+            novoCursoId = Integer.parseInt(cursoField.getText());
+            alterarCadastro(ra, novoNome, novoCursoId, novoCpf);  // Passando o CPF
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "ID do curso inválido");
+        }
+    });
+
+    painel.add(raLabel);
+    painel.add(raField);
+    painel.add(nomeField);
+    painel.add(nomeLabel);
+    painel.add(cursoLabel);
+    painel.add(cursoField);
+    painel.add(cpfLabel);
+    painel.add(cpfField);  // Adicionando campo CPF
+    painel.add(new JLabel());
+    painel.add(atualizarButton);
+
+    return painel;
+}
+
+    public boolean validarCpf(String cpf) {
+        return cpf != null && cpf.matches("^\\d{11}$"); // Verificação simples de CPF
     }
+
 
     // Método para mostrar a janela de créditos
     private void mostrarCreditos() {

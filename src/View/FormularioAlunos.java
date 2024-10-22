@@ -24,6 +24,7 @@ public class FormularioAlunos extends JFrame {
     private String ra;
     private String novoNome;
     private int novoCursoId;
+    private JTextField cpfField;
 
     public FormularioAlunos() {
         try {
@@ -74,9 +75,21 @@ public class FormularioAlunos extends JFrame {
         nomeField.putClientProperty("JComponent.roundRect", true);
         panel.add(nomeField, constraints);
 
+        // Linha 2: CPF
+        constraints.gridx = 0;
+        constraints.gridy = 2;
+        JLabel cpfLabel = new JLabel("CPF:");
+        cpfLabel.setFont(labelFont);
+        panel.add(cpfLabel, constraints);
+
+        constraints.gridx = 1;
+        cpfField = new JTextField(11); // CPF tem 11 dígitos
+        cpfField.putClientProperty("JComponent.roundRect", true);
+        panel.add(cpfField, constraints);
+
         // Linha 2: Curso (ComboBox)
         constraints.gridx = 0;
-        constraints.gridy = 1;
+        constraints.gridy = 3;
         JLabel cursoLabel = new JLabel("Curso:");
         cursoLabel.setFont(labelFont);
         panel.add(cursoLabel, constraints);
@@ -88,14 +101,14 @@ public class FormularioAlunos extends JFrame {
 
         // Linha 3: Botão Inserir
         constraints.gridx = 0;
-        constraints.gridy = 2;
+        constraints.gridy = 4;
         constraints.gridwidth = 2;
         inserirBtn = new JButton("Inserir");
         inserirBtn.addActionListener(new InserirDadosListener());
         panel.add(inserirBtn, constraints);
 
         // Linha 4: Botão Alterar Cadastro
-        constraints.gridy = 3;
+        constraints.gridy = 5;
         alterarButton = new JButton("Alterar Cadastro");
         alterarButton.addActionListener(e -> abrirFormularioAlteracao());
         panel.add(alterarButton, constraints);
@@ -245,14 +258,74 @@ public class FormularioAlunos extends JFrame {
 
 
 // Listener para botão inserir
+//    private class InserirDadosListener implements ActionListener {
+//        @Override
+//        public void actionPerformed(ActionEvent e) {
+//            String nome = nomeField.getText();
+//            String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
+//
+//            if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
+//                JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
+//                return;
+//            }
+//
+//            // Extrair o ID do curso a partir do item selecionado
+//            int cursoId = Integer.parseInt(cursoSelecionado.split(" - ")[0]);
+//
+//            if (nome.isEmpty()) {
+//                JOptionPane.showMessageDialog(null, "Nome não pode estar vazio.");
+//                return;
+//            }
+//
+//            String ra = gerarRAUnico(); // RA único gerado
+//
+//            int matriculaId = gerarMatricula();
+//
+//            try (Connection conexao = DataBase.conectar()) {
+//                String sql = "INSERT INTO alunos (Ra, Nome, Cursos_ID, Matriculas_ID) VALUES (?, ?, ?, ?)";
+//                PreparedStatement stmt = conexao.prepareStatement(sql);
+//                stmt.setString(1, ra);
+//                stmt.setString(2, nome);
+//                stmt.setInt(3, cursoId);
+//                stmt.setInt(4, matriculaId);
+//
+//                stmt.executeUpdate();
+//                JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
+//
+//                // Passar o RA diretamente ao método de matrícula
+//                efetuarMatricula(ra, cursoId);
+//
+//            } catch (SQLException ex) {
+//                JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
+//            }
+//        }
+//    }
+
     private class InserirDadosListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
             String nome = nomeField.getText();
+            String cpf = cpfField.getText(); // Obtendo o CPF
             String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
 
             if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
                 JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
+                return;
+            }
+
+            if (cpf.isEmpty()) {
+                JOptionPane.showMessageDialog(null, "CPF não pode estar vazio.");
+                return;
+            }
+
+            if (!cpf.matches("^\\d{11}$")) { // Verificacao simples de CPF
+                JOptionPane.showMessageDialog(null, "CPF inválido. Deve conter 11 dígitos.");
+                return;
+            }
+
+            // Verificar se o CPF já está cadastrado
+            if (cpfJaCadastrado(cpf)) {
+                JOptionPane.showMessageDialog(null, "Essa pessoa portadora do Cpf fornecido já está cadastrada no sistema." + '\n' + "Por favor insira outros dados.");
                 return;
             }
 
@@ -269,12 +342,13 @@ public class FormularioAlunos extends JFrame {
             int matriculaId = gerarMatricula();
 
             try (Connection conexao = DataBase.conectar()) {
-                String sql = "INSERT INTO alunos (Ra, Nome, Cursos_ID, Matriculas_ID) VALUES (?, ?, ?, ?)";
+                String sql = "INSERT INTO alunos (Ra, Nome, CPF, Cursos_ID, Matriculas_ID) VALUES (?, ?, ?, ?, ?)";
                 PreparedStatement stmt = conexao.prepareStatement(sql);
                 stmt.setString(1, ra);
                 stmt.setString(2, nome);
-                stmt.setInt(3, cursoId);
-                stmt.setInt(4, matriculaId);
+                stmt.setString(3, cpf); // Adicionando CPF
+                stmt.setInt(4, cursoId);
+                stmt.setInt(5, matriculaId);
 
                 stmt.executeUpdate();
                 JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
@@ -287,6 +361,20 @@ public class FormularioAlunos extends JFrame {
             }
         }
     }
+
+    private boolean cpfJaCadastrado(String cpf) {
+        try (Connection conexao = DataBase.conectar()) {
+            String sql = "SELECT CPF FROM alunos WHERE CPF = ?";
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, cpf);
+            ResultSet rs = stmt.executeQuery();
+            return rs.next(); // Se existir algum resultado, o CPF já está cadastrado
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao verificar CPF: " + e.getMessage());
+            return false;
+        }
+    }
+
 
     // Metodo para gerar RA unico
     private String gerarRAUnico() {
