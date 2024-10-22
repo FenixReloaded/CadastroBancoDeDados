@@ -255,52 +255,6 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
-
-
-// Listener para botão inserir
-//    private class InserirDadosListener implements ActionListener {
-//        @Override
-//        public void actionPerformed(ActionEvent e) {
-//            String nome = nomeField.getText();
-//            String cursoSelecionado = (String) cursoComboBox.getSelectedItem();
-//
-//            if (cursoSelecionado == null || cursoSelecionado.isEmpty()) {
-//                JOptionPane.showMessageDialog(null, "Selecione um curso válido.");
-//                return;
-//            }
-//
-//            // Extrair o ID do curso a partir do item selecionado
-//            int cursoId = Integer.parseInt(cursoSelecionado.split(" - ")[0]);
-//
-//            if (nome.isEmpty()) {
-//                JOptionPane.showMessageDialog(null, "Nome não pode estar vazio.");
-//                return;
-//            }
-//
-//            String ra = gerarRAUnico(); // RA único gerado
-//
-//            int matriculaId = gerarMatricula();
-//
-//            try (Connection conexao = DataBase.conectar()) {
-//                String sql = "INSERT INTO alunos (Ra, Nome, Cursos_ID, Matriculas_ID) VALUES (?, ?, ?, ?)";
-//                PreparedStatement stmt = conexao.prepareStatement(sql);
-//                stmt.setString(1, ra);
-//                stmt.setString(2, nome);
-//                stmt.setInt(3, cursoId);
-//                stmt.setInt(4, matriculaId);
-//
-//                stmt.executeUpdate();
-//                JOptionPane.showMessageDialog(null, "Aluno cadastrado com sucesso!");
-//
-//                // Passar o RA diretamente ao método de matrícula
-//                efetuarMatricula(ra, cursoId);
-//
-//            } catch (SQLException ex) {
-//                JOptionPane.showMessageDialog(null, "Erro ao inserir dados: " + ex.getMessage());
-//            }
-//        }
-//    }
-
     private class InserirDadosListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
