@@ -1,16 +1,12 @@
 import javax.swing.*;
-
-import View.FramePrincipal;
-import View.TelaCadastroAlunos;
-import com.formdev.flatlaf.FlatLightLaf;
-import com.formdev.flatlaf.themes.FlatMacLightLaf;
-
 import java.awt.*;
 
+import View.FramePrincipal;
+import com.formdev.flatlaf.FlatLightLaf;
 
 public class App {
     public static void main(String args[]){
-        // Definindo o tema FlatLaf
+        // Definindo o tema do FlatLaf
         try {
             UIManager.setLookAndFeel(new FlatLightLaf());
             UIManager.put("TabbedPane.background", new Color(74, 143, 211));

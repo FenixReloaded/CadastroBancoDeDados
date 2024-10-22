@@ -7,21 +7,21 @@ import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 import java.awt.*;
 import java.awt.geom.Point2D;
+import java.net.StandardSocketOptions;
 import java.sql.*;
 
 public class FramePrincipal extends JFrame {
-    //private JFrame frame;
     private JPanel gradientPanel;
     private JButton cadastrarAluno;
     private JButton sairButton;
     private JButton creditosButton;
     private JButton removerButton;
     private JButton alterarButton;
-
     private JButton mostrarButton;
     private String ra;
     private String novoNome;
     private int novoCursoId;
+    //private JFrame frame;
 
     public FramePrincipal(){
         try {
@@ -38,7 +38,7 @@ public class FramePrincipal extends JFrame {
 
         // Configurações da Janela Principal
         setTitle("Sistema de Cadastro de Alunos");
-        setSize(600, 400);
+        setSize(800, 700);
         setLocationRelativeTo(null); // Centraliza a janela
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
@@ -69,7 +69,7 @@ public class FramePrincipal extends JFrame {
         creditosButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
         creditosButton.setFocusPainted(false);                  // Remove a borda de foco
 
-        mostrarButton = new JButton("Mostrar tabela");
+        mostrarButton = new JButton("Listar Alunos");
         mostrarButton.setFont(labelFont);
         mostrarButton.setPreferredSize(new Dimension(160, 50));
         mostrarButton.setContentAreaFilled(true);              // Garante que a área de conteúdo seja preenchida
@@ -93,7 +93,7 @@ public class FramePrincipal extends JFrame {
         sairButton.addActionListener(e -> System.exit(0));
         creditosButton.addActionListener(e -> mostrarCreditos());
         removerButton.addActionListener(e -> new TelaRemoverAluno());
-        mostrarButton.addActionListener(e -> mostrarTabela());
+        mostrarButton.addActionListener(e -> mostrarTabelaAlunos());
 
         // Adicionando os Botões no Painel
         GridBagConstraints gbc = new GridBagConstraints();
@@ -104,16 +104,17 @@ public class FramePrincipal extends JFrame {
         gradientPanel.add(cadastrarAluno, gbc); // Adiciona o botão de cadastro
 
         gbc.gridy = 1; // Próxima linha
+        gradientPanel.add(mostrarButton, gbc); // Adiciona o botão de mostrar tabela
+
+        gbc.gridy = 2; // Próxima linha
         gradientPanel.add(removerButton, gbc); // Adiciona o botão de remover aluno
 
-        gbc.gridy = 2;
+        gbc.gridy = 3;
         gradientPanel.add(creditosButton, gbc); // Adiciona o botao de creditos
 
-        gbc.gridy = 3; // Próxima linha
+        gbc.gridy = 4; // Próxima linha
         gradientPanel.add(sairButton, gbc); // Adiciona o botão de sair
 
-        gbc.gridy = 4; // Próxima linha
-        gradientPanel.add(mostrarButton, gbc); // Adiciona o botão de mostrar tabela
 
         // Adiciona o painel de fundo ao frame principal
         add(gradientPanel);
@@ -192,12 +193,10 @@ public class FramePrincipal extends JFrame {
         return painel;
     }
 
-
-
     // Método para mostrar a janela de créditos
     private void mostrarCreditos() {
         JDialog creditosDialog = new JDialog(this, "Créditos", true);
-        creditosDialog.setSize(300, 300);
+        creditosDialog.setSize(500, 500);
         creditosDialog.setLocationRelativeTo(this);
 
         // Painel de fundo com degradê
@@ -207,12 +206,13 @@ public class FramePrincipal extends JFrame {
         // Texto dos nomes com estilo
         JLabel nomesLabel = new JLabel(
                 "<html><div style='text-align: center;'>" +
-                        "<h2 style='color: #f8f8ff;'>Créditos</h2>" +
+                        "<h1 style='color: #f8f8ff;'>Créditos:</h1>" +
+                        "<h2 style='color: #f8f8ff;'>Versão 1.0 Sistema de Cadastro de Alunos</h2>" +
                         "<p style='color: #f8f8ff;'>Caio Pereira Guimarães</p>" +
                         "<p style='color: #f8f8ff;'>João Pedro do Carmo Ribeiro</p>" +
                         "<p style='color: #f8f8ff;'>Lucas Kenji Hayashi</p>" +
-                        "<p style='color: #f8f8ff;'>Gabriel Carlos</p>" +
-                        "<p style='color: #f8f8ff;'>Pedro França</p>" +
+                        "<p style='color: #f8f8ff;'>Gabriel Carlos Silva</p>" +
+                        "<p style='color: #f8f8ff;'>Pedro França de Godoi</p>" +
                         "</div></html>"
         );
         nomesLabel.setHorizontalAlignment(SwingConstants.CENTER);
@@ -226,9 +226,10 @@ public class FramePrincipal extends JFrame {
         creditosDialog.setVisible(true);
     }
 
+
     // Mostra a tabela toda de alunos
-    private void mostrarTabela(){
-        JDialog tabelaDialog = new JDialog(this, "Tabela", true);
+    private void mostrarTabelaAlunos(){ // Colocar estilos flatlaf nas tabelas
+        JDialog tabelaDialog = new JDialog(this, "Tabela de Alunos", true);
         tabelaDialog.setSize(800, 600);
         tabelaDialog.setLocationRelativeTo(null);
 
@@ -241,11 +242,12 @@ public class FramePrincipal extends JFrame {
             String[] nomesColunas = {"RA", "Nome", "Curso"};
             Object[][] dados = new Object[getQntAlunos()][3];
 
-            // Insere os alunos na tabela
+            // Insere os alunos na JTable
             for(int i=0;rs.next();i++) {
-                String ra = rs.getString("Ra");
-                String nome = rs.getString("Nome");
-                int curso = rs.getInt("Cursos_ID");
+                String ra = rs.getString("Ra");         // RA do aluno que sera mostrado
+                String nome = rs.getString("Nome");     // Nome do aluno que sera mostrado
+                int cursoId = rs.getInt("Cursos_ID");   // Retorna o ID do curso que sera usado pela funcao getNomeCurso(int).
+                String curso = getNomeCurso(cursoId);              // Nome do curso que sera mostrado
                 Object[] elemento = {ra, nome, curso};
                 dados[i] = elemento;
             }
@@ -274,7 +276,7 @@ public class FramePrincipal extends JFrame {
 
     }
 
-    // Retorna a qnt de elementos na lista de Alunos
+    // Retorna a qnt de alunos na lista de Alunos
     private int getQntAlunos(){
         int R = 0;
         try (   Connection conexao = DataBase.conectar();
@@ -284,6 +286,26 @@ public class FramePrincipal extends JFrame {
 
             while(rs.next()) {
                 R = rs.getInt("COUNT(Ra)");
+            }
+
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, "Erro ao carregar alunos: " + e.getMessage());
+        }
+
+        return R;
+    }
+
+    // Retorna o nome do curso, recebendo o seu ID.
+    private String getNomeCurso(int i){
+        String R = null;
+        try (   Connection conexao = DataBase.conectar();
+                Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
+                ResultSet rs = stmt.executeQuery("SELECT Nomes FROM cursos WHERE Cursos_ID = " + i);
+
+        ) {
+            while(rs.next()) {
+                R = rs.getString("Nomes");
+
             }
 
         } catch (SQLException e) {

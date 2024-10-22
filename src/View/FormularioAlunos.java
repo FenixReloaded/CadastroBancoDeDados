@@ -25,8 +25,6 @@ public class FormularioAlunos extends JFrame {
     private String novoNome;
     private int novoCursoId;
 
-
-
     public FormularioAlunos() {
         try {
             UIManager.setLookAndFeel(new FlatMacLightLaf());
@@ -38,7 +36,6 @@ public class FormularioAlunos extends JFrame {
             UIManager.put("ComboBox.editorColumns", 1);
             UIManager.put("ComboBox.font", new Font("Comic Sans MS", Font.BOLD, 13));
 
-
             UIManager.put("Button.margin", new Insets(6, 2, 6, 2));
             UIManager.put("Button.minimumWidth", 10);
             UIManager.put("Button.minimumHeight", 35);
@@ -48,8 +45,9 @@ public class FormularioAlunos extends JFrame {
         } catch (Exception e){
             e.printStackTrace();
         }
+
         setTitle("Inserção de Dados - Alunos");
-        setSize(400, 400);
+        setSize(400, 550);
         setLocationRelativeTo(null); // Centraliza a janela
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -106,14 +104,6 @@ public class FormularioAlunos extends JFrame {
         setVisible(true);
     }
 
-    private void abrirFormularioAlteracao() {
-        JFrame frame = new JFrame("Atualizar Cadastro");
-        frame.setSize(400, 300);
-        frame.setLocationRelativeTo(null);
-        frame.add(criarFormularioAlteracao());
-        frame.setVisible(true);
-    }
-
     private JPanel criarFormularioAlteracao() {
         JPanel painel = new JPanel(new GridLayout(4, 2, 10, 10));
         painel.setBorder(new EmptyBorder(20, 20, 20, 20));
@@ -124,7 +114,7 @@ public class FormularioAlunos extends JFrame {
 
         // Criar ComboBox para cursos
         JComboBox<String> cursoField = new JComboBox<>();
-        carregarCursosParaComboBox(cursoField); // Carregar os cursos no ComboBox de alteração
+        carregarCursosComboBox(cursoField); // Carregar os cursos no ComboBox de alteração
 
         // Botão de atualizar
         JButton atualizarButton = new JButton("Atualizar");
@@ -134,7 +124,7 @@ public class FormularioAlunos extends JFrame {
             try {
                 // Extrair o ID do curso do item selecionado no ComboBox
                 int novoCursoId = Integer.parseInt(cursoField.getSelectedItem().toString().split(" - ")[0]);
-                atualizarCadastro(ra, novoNome, novoCursoId);
+                updateCadastro(ra, novoNome, novoCursoId);
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(null, "ID do curso inválido.");
             }
@@ -154,7 +144,7 @@ public class FormularioAlunos extends JFrame {
     }
 
     // Carrega os cursos em qualquer ComboBox
-    public void carregarCursosParaComboBox(JComboBox<String> comboBox) {
+    public void carregarCursosComboBox(JComboBox<String> comboBox) {
         try (Connection conexao = DataBase.conectar();
              Statement stmt = conexao.createStatement(ResultSet.TYPE_SCROLL_INSENSITIVE, ResultSet.CONCUR_READ_ONLY);
              ResultSet rs = stmt.executeQuery("SELECT Cursos_ID, Nomes FROM cursos ORDER BY Cursos_ID ASC")) {
@@ -172,9 +162,7 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
-
-
-    private void atualizarCadastro(String ra, String novoNome, int novoCursoId) {
+    private void updateCadastro(String ra, String novoNome, int novoCursoId) {
         String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
 
         try (Connection conexao = DataBase.conectar();
@@ -196,77 +184,13 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
-
-    private void alterarCadastro(String ra, String novoNome, int novoCursoId){
+    private void abrirFormularioAlteracao() {
         JFrame frame = new JFrame("Atualizar Cadastro");
-        frame.setSize(400, 400);
+        frame.setSize(400, 300);
         frame.setLocationRelativeTo(null);
-        frame.add(formularioAlterarCadastro());
+        frame.add(criarFormularioAlteracao());
         frame.setVisible(true);
-
-        JPanel panel = new JPanel(new GridLayout(0, 1));
-        panel.setBorder(new EmptyBorder(20, 20, 20, 20));
-
-        String sql = "UPDATE alunos SET Nome = ?, Cursos_ID = ? WHERE Ra = ?";
-
-        try (Connection conexao = DataBase.conectar();
-             PreparedStatement stmt = conexao.prepareStatement(sql)) {
-
-            stmt.setString(1, novoNome);
-            stmt.setInt(2, novoCursoId);
-            stmt.setString(3, ra);
-
-            int linhasAfetadas = stmt.executeUpdate();
-
-            if (linhasAfetadas > 0) {
-                JOptionPane.showMessageDialog(null, "Aluno atualizado com sucesso!");
-            } else {
-                JOptionPane.showMessageDialog(null, "Aluno não encontrado!");
-            }
-        } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, "Erro ao atualizar aluno: " + e.getMessage());
-        }
     }
-
-    public JPanel formularioAlterarCadastro(){
-        JPanel painel = new JPanel(new GridLayout(4, 2,10,10));
-
-        JLabel raLabel = new JLabel("RA:");
-        JTextField raField = new JTextField();
-
-        JLabel nomeLabel = new JLabel("Novo Nome");
-        JTextField nomeField = new JTextField();
-
-        JLabel cursoLabel = new JLabel("Novo Curso ID:");
-        JTextField cursoField = new JTextField();
-
-        JButton atualizarButton = new JButton("Atualizar");
-
-        atualizarButton.addActionListener(e -> {
-            String ra = raField.getText();
-            String novoNome = nomeField.getText();
-            int novoCursoId;
-
-            try {
-                novoCursoId = Integer.parseInt(cursoField.getText());
-                alterarCadastro(ra, novoNome, novoCursoId);
-            } catch (NumberFormatException ex){
-                JOptionPane.showMessageDialog(null, "ID do curso inválido");
-            }
-        });
-
-        painel.add(raLabel);
-        painel.add(raField);
-        painel.add(nomeField);
-        painel.add(nomeLabel);
-        painel.add(cursoLabel);
-        painel.add(cursoField);
-        painel.add(new JLabel());
-        painel.add(atualizarButton);
-
-        return painel;
-    }
-
 
     // Método para obter cursos do banco
     public void carregarCursos() {
@@ -290,7 +214,7 @@ public class FormularioAlunos extends JFrame {
 
     // Método para obter disciplinas do banco
 
-    private String[] obterDisciplinasDoCurso(int cursoId) {
+    private String[] queryObterDisciplinasDoCurso(int cursoId) {
         String query = "SELECT Nome FROM disciplinas WHERE Cursos_ID = ?";
 
         try (Connection conexao = DataBase.conectar();
@@ -320,7 +244,7 @@ public class FormularioAlunos extends JFrame {
 
 
 
-
+// Listener para botão inserir
     private class InserirDadosListener implements ActionListener {
         @Override
         public void actionPerformed(ActionEvent e) {
@@ -364,7 +288,7 @@ public class FormularioAlunos extends JFrame {
         }
     }
 
-    // Método para gerar RA único
+    // Metodo para gerar RA unico
     private String gerarRAUnico() {
         Random random = new Random();
         String ra;
@@ -385,7 +309,7 @@ public class FormularioAlunos extends JFrame {
         return ra;
     }
 
-    // Método para gerar número de matrícula incremental
+    // Metodo para gerar numero de matricula incremental
     private int gerarMatricula() {
         int novoRegistroId = 1; // Valor inicial caso a tabela esteja vazia
 
@@ -411,6 +335,7 @@ public class FormularioAlunos extends JFrame {
         return novoRegistroId;
     }
 
+    // Metodo para efetuar a matricula em si
     private void efetuarMatricula(String alunoRa, int cursoId) {
         JFrame frame = new JFrame("Efetuar Matrícula");
         frame.setSize(300, 400);
@@ -420,7 +345,7 @@ public class FormularioAlunos extends JFrame {
         panel.setBorder(new EmptyBorder(20, 20, 20, 20));
 
         // Obter disciplinas específicas para o curso selecionado
-        String[] disciplinas = obterDisciplinasDoCurso(cursoId);
+        String[] disciplinas = queryObterDisciplinasDoCurso(cursoId);
         JCheckBox[] checkboxes = new JCheckBox[disciplinas.length];
 
         for (int i = 0; i < disciplinas.length; i++) {
@@ -438,7 +363,7 @@ public class FormularioAlunos extends JFrame {
 
                 for (JCheckBox checkbox : checkboxes) {
                     if (checkbox.isSelected()) {
-                        int disciplinaId = obterIdDisciplina(checkbox.getText());
+                        int disciplinaId = queryObterIdDisciplina(checkbox.getText());
                         stmt.setInt(1, disciplinaId);
                         stmt.setString(2, alunoRa); // RA correto sendo usado
                         stmt.setString(3, "Matriculado");
@@ -460,7 +385,7 @@ public class FormularioAlunos extends JFrame {
         frame.setVisible(true);
     }
 
-    private int obterIdDisciplina(String nomeDisciplina) {
+    private int queryObterIdDisciplina(String nomeDisciplina) {
         String query = "SELECT Disciplinas_ID FROM disciplinas WHERE Nome = ?";
         try (Connection conexao = DataBase.conectar();
              PreparedStatement stmt = conexao.prepareStatement(query)) {
